@@ -6,11 +6,13 @@ Author: Rick Donnelly
 Maintainer: Rick Donnelly <donnellyr@pbworld.com>
 Description: A library of functions for building the commercial transport (CT)
     model within the Oregon DOT's Statewide Integrated Model (SWIM) Version 2.x.
-Depends: R (>= 3.3.1)
-Imports: 
+Depends:
+    R (>= 3.3.1)
+Imports:
     tidyverse (>= 1.0),
     doParallel (>= 1.0),
     stringr
 License: CC0
 Encoding: UTF-8
 LazyData: true
+RoxygenNote: 5.0.1
