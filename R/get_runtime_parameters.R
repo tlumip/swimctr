@@ -1,15 +1,15 @@
 #' Read the runtime parameters file and store them in environment
-#' 
+#'
 #' @param propertiesFN Filename containing the runtime parameters, with full
 #'   path information included in the filename
 #' @param format The format the runtime parameters are stored in within the
-#'   file, which includes java (the default, and currently only supported 
+#'   file, which includes java (the default, and currently only supported
 #'   format) and xml (future)
 #' @param delimiter The character used to separate the parameter name from its
 #'   value (defaults to '=', not relevant for XML format)
 #' @param import_flag Some parameters are tables stored in external files in
 #'   command separated value (CSV) format. This parameter, when it precedes the
-#'   runtime parameter value, signals the function that the value string is 
+#'   runtime parameter value, signals the function that the value string is
 #'   a file that should should be read when adding that runtime parameter to the
 #'   simulation environment. (default is '&')
 #' @param echo_parameters Print the runtime parameters after setting them up
@@ -18,42 +18,42 @@
 #'   for later processing or archiving (optional)
 #'
 #' @details This function reads a file containing the runtime parameters
-#'   required by the CT platform. The variables required depend somewhat upon 
+#'   required by the CT platform. The variables required depend somewhat upon
 #'   the exact model implementation (i.e., what CT functions are called, using
 #'   what methods, and in what order). These should be specified by the model
-#'   developer. Note that it is possible to call this function twice in order 
+#'   developer. Note that it is possible to call this function twice in order
 #'   to set default parameters the first time through, and scenario-specific
-#'   parameters the second time. In that case the default parameters are 
+#'   parameters the second time. In that case the default parameters are
 #'   overwritten if also defined in the scenario-specific parameters file. This
 #'   enables the latter to only contain parameter values that differ from one
 #'   model run to the next, rather than repeating standard parameters that
 #'   rarely change, if ever, between different simulations.
-#'   
+#'
 #'   It is important to note that all of the parameters are treated as strings
 #'   in plaintext (java) formatted files, whereas the class can be explicitly
 #'   set in XML or JSON files. However, the latter are not yet implemented (and
 #'   will not be until needed). Thus, it is incumbent upon the user to cast the
 #'   runtime parameters to correct class before evaluating or manipulating them
-#'   in their code. 
-#'   
+#'   in their code.
+#'
 #' @export
 #' @examples
 #' get_runtime_parameters("/Models/swim25/run81/t0/swim.properties")
-#' get_runtime_parameters("/Models/swim25/run91/t25/swim.properties", 
+#' get_runtime_parameters("/Models/swim25/run91/t25/swim.properties",
 #'   save_to = "ct_runtime_parameters.RData")
 
-get_runtime_parameters <- function(propertiesFN, format = "java", 
+get_runtime_parameters <- function(propertiesFN, format = "java",
   delimiter = '=', import_flag = '&', echo_parameters = TRUE, save_to = NULL) {
   require(stringr)  # package prefix omitted in this function for brevity sake
-  
-  # How we will read the parameters file will depend upon how it is coded. For 
+
+  # How we will read the parameters file will depend upon how it is coded. For
   # now the only supported type is java.
   supported_formats <- c("java")
   if (!format %in% supported_formats) {
     error_message <- paste("Format", format, "is not supported")
     stop(error_message)
   }
-  
+
   # Start with code for handling java format
   if (format == "java") {
     # Start by reading the contents of the runtime parameters file and removing
@@ -62,19 +62,19 @@ get_runtime_parameters <- function(propertiesFN, format = "java",
       strip.white = TRUE, comment.char = '#')  #, quote = "")
     notabs <- str_replace(noquote(raw), '\t', "")
     noquotes <- str_replace_all(notabs, '\"', "") # Remove R's double quote
-    
+
     # Split each record into token and value by using the delimiter argument to
     # split them. Start by extracting the token names. Remember that str_locate
     # returns two values: the first and last occurrences of the character in the
     # string. We only need the first value in this case.
     params <- dplyr::data_frame(token = str_trim(str_sub(noquotes, 1,
       str_locate(notabs, delimiter)[,1]-1)))
-    
+
     # Next isolate the value associated with each token
     params$value <- str_trim(str_sub(noquotes,
       str_locate(noquotes, delimiter)[,1]+1, str_length(noquotes)))
     params$value <- str_replace_all(params$value, " ", "")  # Remove spaces
-    
+
     # Finally, we need to determine whether the string we read for the value is
     # indeed what the user intended, or whether it is a pointer to a file that
     # should be read to obtain the contents. Thus, we look for a leading import
@@ -88,19 +88,19 @@ get_runtime_parameters <- function(propertiesFN, format = "java",
     error_message <- paste("Format", format, "not yet supported")
     stop(error_message)
   }
-  
+
   # Create the runtime parameters (RTP) environment if it does not exist, and
   # add the current token-value pairs to it. This will overwrite existing pairs
   # if redefined in the current set.
   if (!exists("RTP")) RTP <<- new.env()
-  
+
   # We need to set the root.dir first, because other parameters might depend
   # upon it to find location of the files if relative directory structure is
   # used. So we'll sequentially number the params records, set root.dir to zero,
   # and then re-sort the data frame accordingly.
   params$seq <- 1:nrow(params)
   params$seq <- ifelse(params$token == "root.dir", 0, params$seq)
-  
+
   # If the user did not explicitly set root.dir then assume it is the current
   # directory. Again, it needs to be first, so put it there after defining it.
   all_tokens <- unique(params$token)
@@ -112,38 +112,40 @@ get_runtime_parameters <- function(propertiesFN, format = "java",
     ct_msg(paste("Required parameter root.dir assumed to be", getwd()))
   }
   params <- dplyr::arrange(params, seq)
-  
+
   # Set the individual runtime enviroment variables from this stack
   for (i in 1:nrow(params)) {
     if (params$flag[i] == "literal") {
       # If the value is literal then simply place it into the environment
       RTP[[params$token[i]]] <- params$value[i]
     } else {
-      # But otherwise we will attempt to read the file as CSV format. However,
-      # at this point we have no idea whether the filename has path included or
-      # not. So we'll see if the first character is a slash, and if so, assume
-      # that it does. If not we'll preface the filename with root.dir.
-      first_char <- substr(params$value[i], 1, 1)
-      if (first_char != "/") {
+      # But otherwise we will attempt to read the file as CSV format from the
+      # current folder. If it is not found there then look for it in root.dir.
+      # And if not there then stop the program, for the user has either not
+      # set the required root.dir runtime parameter or mis-specified the file.
+      filename <- params$value[i]
+      if (!file.exists(filename)) {
+        # If the file does not exist in the current directory then look for it
+        # in the root.dir folder
         if (nchar(RTP[["root.dir"]])<1) {
-          error_message <- paste("Somehow root.dir is not defined at seq=", 
+          error_message <- paste("Somehow root.dir is not defined at seq=",
             params$seq[i])
           stop(error_message)
+        } else {
+          filename <- file.path(RTP[["root.dir"]], filename)
         }
-        filename <- file.path(RTP[["root.dir"]], params$value[i])
-      } else {
-        filename <- params$value[i]
+
+        # If the file isn't there, either, then stop
+        if (!file.exists(filename)) {
+          error_message <- paste(params$value[i], "not found in either the",
+            "current folder or in root.dir")
+          stop(error_message)
+        }
       }
-      
-      if (!file.exists(filename)) {
-        error_message <- paste("Could not find parameter file", filename)
-        stop(error_message)
-      } else {
-        RTP[[params$token[i]]] <- readr::read_csv(filename)
-      }
+      RTP[[params$token[i]]] <- readr::read_csv(filename)
     }
   }
-  
+
   # Finally, echo the relevant parameters so that we know they were properly
   # set. However, we don't want to print a data frame associated with any given
   # token, so just print abbreviated summary. Finally, omit any parameters that
@@ -151,7 +153,7 @@ get_runtime_parameters <- function(propertiesFN, format = "java",
   keep <- c("root.dir", "scenario.name", "base.year", "t.year", "t.year.prefix",
     "scenario.outputs", "alpha2beta.file", "highway.assign.previous.skim.path",
     "pecas.makeuse", "pecas.zonal.employment")
-  
+
   # In addition, we want to save anything that has "ct." or "faf." prefix
   for (this_token in all_tokens) {
     # Find the first dot character in the token name
@@ -160,7 +162,7 @@ get_runtime_parameters <- function(propertiesFN, format = "java",
     if (prefix %in% c("ct.", "faf.")) keep <- c(keep, this_token)
   }
   keep <- sort(keep)
-  
+
   # Finally, print the parameters unless the user has told us not to
   if (echo_parameters == TRUE) {
     ct_msg("Runtime parameters:")
@@ -175,7 +177,7 @@ get_runtime_parameters <- function(propertiesFN, format = "java",
       ct_msg(S)
     }
   }
-  
+
   # Finally, if the user has asked to save them put the parameters into a binary
   # data file in the root directory
   if (!is.null(save_to)) {
@@ -183,6 +185,6 @@ get_runtime_parameters <- function(propertiesFN, format = "java",
     save(RTP, file = filename)
     ct_msg(paste("Runtime parameters saved to", filename))
   }
-  
+
   # There is nothing to return, for the RTP environment is already populated
 }
