@@ -25,30 +25,40 @@ export_list_list <- function(hourly_faf_trips, hourly_local_trips, save_to) {
 
   # Process the inter-regional (FAF) trip list first
   regional <- hourly_faf_trips %>%
-    dplyr::select(origin, destination, departure_time, status, truck_type,
-      distance, sctg2, value, tons, direction) %>%
-    dplyr::mutate(travelTime = NA, dataset = "faf",
-      departure_time = as.integer(departure_time)) %>%
-    dplyr::rename(
-      tripMode = status, tourMode = direction,
-      tripStartTime = departure_time, truckType = truck_type
-      )
+    dplyr::transmute(
+      origin = as.integer(origin),
+      tripStartTime = as.integer(departure_time),
+      destination = as.integer(destination),
+      tourMode = direction,
+      tripMode = status,
+      truckID = NA,
+      truckType = truck_type,
+      sctg2, value, tons, travelTime = NA, distance = NA, dataset = "faf"
+    )
 
   # Next do the same with local trips. At the present time CT does not specify
   # the commodity of the truck, so it as well as value and tons are set to
   # missing values
   local <- hourly_local_trips %>%
-    dplyr::select(origin, destination, departure_time, truck_type, distance,
-      travel_time) %>%
-    dplyr::mutate(departure_time = as.integer(departure_time), dataset = "ct",
-      tripMode = "loaded", tourMode = "internal", sctg = NA, value = NA,
-      tons = NA) %>%
-    dplyr::rename(tripStartTime = departure_time, travelTime = travel_time,
-                  truckType = truck_type)
+    dplyr::transmute(
+      origin = origin,
+      tripStartTime = as.integer(departure_time),
+      destination = destination,
+      tourMode = "internal",
+      tripMode = "loaded",
+      truckID = NA,
+      truckType = truck_type,
+      sctg2 = NA, value = NA, tons = NA, travelTime = travel_time, distance, dataset = "ct"
+    )
 
   # Now simply combine the two datasets, and write them out to the specified
   # output file in CSV format
-  combined <- dplyr::bind_rows(regional, local)
+    combined <- dplyr::bind_rows(regional, local) %>%
+      dplyr::arrange(origin, destination) %>%
+      dplyr::mutate(
+        origin = as.character(origin), destination = as.character(destination),
+        truckID = 1:n())
+
   readr::write_csv(combined, save_to)
   print(paste(nrow(combined), "total trip records written to", save_to),
     quote = FALSE)
