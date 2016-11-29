@@ -1,7 +1,13 @@
-# A set of helper functions
-
-# Instead of R's normal print function we can use one that prints without quotes,
-# as well as extending it to print function headers in the output
+#' Print a ct message
+#'
+#' @param s Character string to print to console
+#' @param header [Optional] string to print as a header
+#'
+#' Instead of R's normal print function we can use one that prints without quotes,
+#' as well as extending it to print function headers in the output.
+#'
+#' @export
+#'
 ct_msg <- function(s = NULL, header = NULL) {
   # If the user asks us to print a section header in the output stream then put
   # an empty string (blank line) if the logfile is defined, and then put a
