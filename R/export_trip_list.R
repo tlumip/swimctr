@@ -17,9 +17,9 @@
 #'
 #' @export
 #' @examples
-#' export_list_list(hourly_faf_trips, hourly_local_trips, "Trips_CTTruck.csv")
+#' export_trip_list(hourly_faf_trips, hourly_local_trips, "Trips_CTTruck.csv")
 
-export_list_list <- function(hourly_faf_trips, hourly_local_trips, save_to) {
+export_trip_list <- function(hourly_faf_trips, hourly_local_trips, save_to) {
 
   ct_msg(header = "Export trip list")
 

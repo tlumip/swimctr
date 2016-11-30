@@ -12,7 +12,7 @@ get_runtime_parameters(propertiesFN, format = "java", delimiter = "=",
 path information included in the filename}
 
 \item{format}{The format the runtime parameters are stored in within the
-file, which includes java (the default, and currently only supported 
+file, which includes java (the default, and currently only supported
 format) and xml (future)}
 
 \item{delimiter}{The character used to separate the parameter name from its
@@ -20,7 +20,7 @@ value (defaults to '=', not relevant for XML format)}
 
 \item{import_flag}{Some parameters are tables stored in external files in
 command separated value (CSV) format. This parameter, when it precedes the
-runtime parameter value, signals the function that the value string is 
+runtime parameter value, signals the function that the value string is
 a file that should should be read when adding that runtime parameter to the
 simulation environment. (default is '&')}
 
@@ -35,17 +35,17 @@ Read the runtime parameters file and store them in environment
 }
 \details{
 This function reads a file containing the runtime parameters
-  required by the CT platform. The variables required depend somewhat upon 
+  required by the CT platform. The variables required depend somewhat upon
   the exact model implementation (i.e., what CT functions are called, using
   what methods, and in what order). These should be specified by the model
-  developer. Note that it is possible to call this function twice in order 
+  developer. Note that it is possible to call this function twice in order
   to set default parameters the first time through, and scenario-specific
-  parameters the second time. In that case the default parameters are 
+  parameters the second time. In that case the default parameters are
   overwritten if also defined in the scenario-specific parameters file. This
   enables the latter to only contain parameter values that differ from one
   model run to the next, rather than repeating standard parameters that
   rarely change, if ever, between different simulations.
-  
+
   It is important to note that all of the parameters are treated as strings
   in plaintext (java) formatted files, whereas the class can be explicitly
   set in XML or JSON files. However, the latter are not yet implemented (and
@@ -55,7 +55,7 @@ This function reads a file containing the runtime parameters
 }
 \examples{
 get_runtime_parameters("/Models/swim25/run81/t0/swim.properties")
-get_runtime_parameters("/Models/swim25/run91/t25/swim.properties", 
+get_runtime_parameters("/Models/swim25/run91/t25/swim.properties",
   save_to = "ct_runtime_parameters.RData")
 }
 
