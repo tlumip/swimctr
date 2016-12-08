@@ -92,7 +92,7 @@ local_truck_generation <- function(synthetic_firms, generation_probabilities,
       if (trials>as.integer(max_resampling_attempts)) {
         error_message <- paste("Max resampling exceeded while working on", t,
           "generation")
-        stop(error_message)
+        warning(error_message)
       }
 
       # Calculate our target
