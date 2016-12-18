@@ -85,14 +85,25 @@ local_truck_generation <- function(synthetic_firms, generation_probabilities,
     success <- FALSE
     stage <- ""
     trials <- 1
+    
+    # If we have a small enough number of total trucks of this type it might be
+    # hard to get under the maximum desirable error, even though we want it that
+    # low for the more frequently occurring types. So we'll keep track of the
+    # "best solution so far" so that we can retain that if we do not converge
+    # before we hit the maximum number of resampling attempts.
+    best_solution <- NULL
+    best_difference <- 999.9  # An easy bar to pass beneath
+    
     while (!success) {
       # Check to make sure that we haven't exceeded the maximum number of
       # attempts at replanning. If we have something pathological has happened
       # and we need to stop dead in our tracks.
       if (trials>as.integer(max_resampling_attempts)) {
-        error_message <- paste("Max resampling exceeded while working on", t,
-          "generation")
-        stop(error_message)
+        these_firms$daily_trips <- best_solution
+        warning_message <- paste("Max resampling exceeded while working on", t,
+          "generation, set to best solution")
+        warning(warning_message)
+        break
       }
 
       # Calculate our target
@@ -107,6 +118,13 @@ local_truck_generation <- function(synthetic_firms, generation_probabilities,
       these_firms$daily_trips <- ifelse(rn<=fp, pw+1, pw)
       adjusted_total <- sum(these_firms$daily_trips)
       pct_difference<-((adjusted_total-initial_total)/initial_total)*100.0
+      
+      # Store the best solution so far, in case we don't converge before we run
+      # out of resampling attempts
+      if (pct_difference < best_difference) {
+        best_difference <- pct_difference
+        best_solution <- these_firms$daily_trips
+      }
 
       # Show us how we did
       ct_msg(paste(stage, t, " origins: combined=", initial_total,
