@@ -19,7 +19,7 @@ only a long-distance trip)}
 \item{utility_parameters}{Data frame containing weights for distance and
 attractors for each truck type defined in the simulation}
 
-\item{save_to}{File name for saving the trip records with destinations 
+\item{save_to}{File name for saving the trip records with destinations
 appended in comma-separated value format (optional)}
 }
 \description{
@@ -30,7 +30,7 @@ This is a simple destination choice model that mimics a singly-
   constrained gravity model. It samples eligible destinations based upon the
   product of interzonal distance and attractions, however defined. The
   distances are typically limited to a certain distance (120-180 miles),
-  beyond which are considered the realm of long-distance trips. Different 
+  beyond which are considered the realm of long-distance trips. Different
   weights for distance (alpha1) and attractors (alpha2) ar defined for each
   truck type (and can be all set to unity to eliminate such scaling),
   otherwise known as utility parameters. In a typical gravity model
@@ -42,7 +42,7 @@ This is a simple destination choice model that mimics a singly-
   separated value file.
 }
 \examples{
-sample_local_truck_destinations(truck_origins, skim_matrices, 
+sample_local_truck_destinations(truck_origins, skim_matrices,
   utility_parameters, "daily-truck-odflows.csv")
 }
 

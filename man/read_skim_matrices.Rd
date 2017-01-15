@@ -24,7 +24,7 @@ Convert time and distance skim matrices in OMX format to data frame format
 This function reads distance and travel time skim matrices stored in
   compressed matrix format (zmx) used by the SWIM system, combines them into
   a single data frame, and returns the result. The function does not assume
-  that the dimensionality is the same, so as to not use column joins that 
+  that the dimensionality is the same, so as to not use column joins that
   might not properly align. Instead, the more inefficient but safer method of
   matching the two by origin and destination zone numbers are used, with
   missing values inserted for when a zone pair appears in one file but not
