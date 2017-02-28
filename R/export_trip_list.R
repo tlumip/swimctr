@@ -60,8 +60,7 @@ export_trip_list <- function(hourly_faf_trips, hourly_local_trips, save_to) {
         truckID = 1:n())
 
   readr::write_csv(combined, save_to)
-  print(paste(nrow(combined), "total trip records written to", save_to),
-    quote = FALSE)
+  message(nrow(combined), "total trip records written to", save_to)
 
   # No value is returned
 }
