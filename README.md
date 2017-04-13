@@ -6,7 +6,7 @@ This repository contains the code necessary to build and run the commercial tran
 The CT system is set up as a R package, which can be installed from this repository:
 ```
 install.packages("devtools")  # If not already installed
-devtools::install_github("pbsag/swimctr")
+devtools::install_github("tlumip/swimctr")
 ```
 
 In theory one could mix and match the included functions in any order to run the model, but the run_model template assumes that the model is implemented as described in the SWIM2 Model Development Guide and project wiki:
