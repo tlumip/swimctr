@@ -40,4 +40,3 @@ This function converts the PECAS input-output flows by sector into
 make_use <- create_makeuse_coefficients(pecas_makeuse, faf_data,
   "make-use-coefficients.csv")
 }
-

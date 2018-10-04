@@ -58,4 +58,3 @@ get_runtime_parameters("/Models/swim25/run81/t0/swim.properties")
 get_runtime_parameters("/Models/swim25/run91/t25/swim.properties",
   save_to = "ct_runtime_parameters.RData")
 }
-

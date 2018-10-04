@@ -55,4 +55,3 @@ This function allocates discrete daily FAF (inter-regional) truck
 daily_faf_flows <- allocate_faf_to_zones(daily_faf_trips, synthetic_firms,
   makeuse, intermodal_connectors, external_gateways, "daily_faf_flows.csv")
 }
-

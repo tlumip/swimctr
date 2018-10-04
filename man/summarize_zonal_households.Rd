@@ -26,4 +26,3 @@ This simple function tallies the number of households within each
 \examples{
 total_households <- summarize_zonal_households(zonal_data, "houeholds.csv")
 }
-

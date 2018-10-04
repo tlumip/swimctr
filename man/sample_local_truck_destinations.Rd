@@ -45,4 +45,3 @@ This is a simple destination choice model that mimics a singly-
 sample_local_truck_destinations(truck_origins, skim_matrices,
   utility_parameters, "daily-truck-odflows.csv")
 }
-

@@ -35,4 +35,3 @@ This function reads distance and travel time skim matrices stored in
 skim_matrices <- read_skim_matrices("pmautodist.zmx", "pmautotime.zmx",
   "skim_matrices.csv")
 }
-

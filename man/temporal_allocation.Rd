@@ -43,4 +43,3 @@ hourly_faf_trucks <- temporal_allocation(daily_faf_trips,
 hourly_local_trucks <- temporal_allocation(daily_local_trips,
   temporal_spread, "final_internal_trip_records.csv")
 }
-

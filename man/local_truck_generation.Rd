@@ -48,4 +48,3 @@ daily_trips <- local_truck_generation(synthetic_firms,
   generation_probabilities, random_seed = 1, max_resampling_attempts = 30,
   max_resampling_threshold = 0.5, "local-truck-origins.csv")
 }
-

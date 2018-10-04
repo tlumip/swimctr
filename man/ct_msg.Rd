@@ -17,4 +17,3 @@ as well as extending it to print function headers in the output.}
 \description{
 Print a ct message
 }
-

@@ -54,4 +54,3 @@ faf_annual_trucks <- create_annual_faf_truckloads(faf_data,
   truck_allocation_factors, truck_equivalency_factors, empty_truck_factors,
   2020)  # Accepts the default for cluster log and does not save output
 }
-

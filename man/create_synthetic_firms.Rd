@@ -32,4 +32,3 @@ This function maps employment by PECAS sector within each alpha zone
 zones <- create_synthetic_firms(zonal_data, sector_equivalencies, alpha2beta,
   "synthetic-firms.csv")
 }
-

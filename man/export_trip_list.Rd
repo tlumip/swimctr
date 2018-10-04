@@ -31,4 +31,3 @@ This function will typically be the last part of the model to run,
 \examples{
 export_trip_list(hourly_faf_trips, hourly_local_trips, "Trips_CTTruck.csv")
 }
-
