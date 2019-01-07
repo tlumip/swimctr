@@ -2,11 +2,11 @@
 % Please edit documentation in R/sample_daily_faf_truckloads.R
 \name{sample_daily_faf_truckloads}
 \alias{sample_daily_faf_truckloads}
-\title{Sample daily FAF truck trips from annual FAF flow database}
+\title{Sample daily truck trips from annual FAF flow database}
 \usage{
 sample_daily_faf_truckloads(annual_faf_trucks,
-  external_scaling_factor = 1, weeks_per_year = 50, target_week = 24,
-  target_day = 4, cluster_log = "cluster.log", save_to = NULL)
+  external_scaling_factor = 1, weeks_per_year = 50, target_week = 17,
+  target_day = 4, debug_trace = FALSE)
 }
 \arguments{
 \item{annual_faf_trucks}{Data frame containing reformatted FAF commodity flow
@@ -14,46 +14,41 @@ database with estimate of total annual truckload equivalents appended}
 
 \item{external_scaling_factor}{Asserted or estimating factor to account for
 FAF commodity flows that grouped into single truck movements (default is
-1.0, which assumes no such factoring is carried out}
+1.0, which assumes no such factoring is carried out)}
 
-\item{weeks_per_year}{The number of weeks per year the annual flows are 
-assumed to be spread across (default = 50, which is less than full year,
-to account for reduced flows on national holidays)}
+\item{weeks_per_year}{The number of weeks per year the annual flows are
+assumed to be spread across (default = 50)}
 
 \item{target_week}{The week of the year that the simulated flows will be
-extracted for (default = 24, which is near end of April)}
+extracted for (default = 17)}
 
 \item{target_day}{The day of the week the flows are sampled for (default = 4,
 which corresponds to Wednesday)}
 
-\item{cluster_log}{The filename of a file used to store output from the
-doParallel cluster (optional)}
-
-\item{save_to}{File name for saving the daily FAF truck trip records in
-comma-separated value format (optional)}
+\item{debug_trace}{A boolean variable signifying whether extended messaging
+is enabled (defaults to FALSE)}
 }
 \description{
-Sample daily FAF truck trips from annual FAF flow database
+Sample daily truck trips from annual FAF flow database
 }
 \details{
-This function appends annual truckload equivalents to the FHWA
-  Freight Analysis Framework (FAF) commodity flow forecast database. The
-  process is based upon the FAF3 Traffic Analysis report developed by 
-  Battelle, which maps tonnage to truckload equivalents, including empty
-  trucks. The function requires reformatted FAF data that replaces several
-  numeric values with strings that are more intuitive, adds the distance
-  traveled between FAF region centroids to each record, and converts the data
-  from the wide format FHWA distributes it in to tall format, with separate
-  record for each foreast year for each origin-destination-mode-commodity
-  combination. The function also requires three tables from Chapter 3 of the
-  FAF Traffic Analysis report, and then follows their methodology exactly 
-  (but without the errors in the report). Because the SWIM simulation runs
-  through time the data are mapped to the closest FAF forecast year for each
-  year in the simulation. The function returns an updated FAF database with
-  truckload equivalents appended to each record.
+This function samples daily truck trips from FAF annual truckload
+  equivalents. It samples for a Wednesday in the 17th week of the year by
+  default, which typically falls in late April. The user can specify both the
+  `target_day` (where Sunday is 1, Monday is 2, ...) and `target_week`. There
+  are always 52 weeks/year, of course, but the user might want to specify a
+  slightly smaller value for `weeks_per_year` to account for major holidays
+  when all commercial activities are lower.
+
+  An `external_scaling_factor` can also be set that applies to inbound,
+  outbound, and through truck flows. It defaults to 1.0 (i.e., no scaling),
+  but can be set based upon truck intercept surveys or assertion to account
+  for several shipments consolidated on a single truck. It might make sense
+  to allow the user to specify a data frame with different scaling factors
+  for each FAF region origin-destination pair of by distance band, but for
+  now a single value is applied to all flows with one or both trip ends
+  outside of the modeled area.
 }
 \examples{
-faf_annual_trucks <- create_annual_faf_truckloads(faf_data,
-  truck_allocation_factors, truck_equivalency_factors, empty_truck_factors,
-  2020)  # Accepts the default for cluster log and does not save output
+daily_trucks <- sample_daily_faf_truckloads(annual_faf_truckloads, 1.0)
 }

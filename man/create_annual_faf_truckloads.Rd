@@ -5,8 +5,7 @@
 \title{Generate annual truckload equivalents using FAF3 Traffic Analysis process}
 \usage{
 create_annual_faf_truckloads(faf_data, truck_allocation_factors,
-  truck_equivalency_factors, empty_truck_factors, this_year,
-  cluster_log = "cluster.log", save_to = NULL)
+  truck_equivalency_factors, empty_truck_factors, debug_trace = FALSE)
 }
 \arguments{
 \item{faf_data}{Data frame containing reformatted FAF commodity flow database}
@@ -14,20 +13,15 @@ create_annual_faf_truckloads(faf_data, truck_allocation_factors,
 \item{truck_allocation_factors}{Data frame containing factors that map
 commodity flows to different types of trucks}
 
-\item{truck_equivalency_factors}{Data frame containing factors that 
+\item{truck_equivalency_factors}{Data frame containing factors that
 translate tons into truckload equivalents}
 
 \item{empty_truck_factors}{Data frame containing factors for calculating
 incidence of empty trucks, given the trade (domestic versus foreign) and
 truck type}
 
-\item{this_year}{The four-digit calendar year currently being simulated}
-
-\item{cluster_log}{The filename of a file used to store output from the
-doParallel cluster (optional)}
-
-\item{save_to}{File name for saving the trip records with destinations 
-appended in comma-separated value format (optional)}
+\item{debug_trace}{Turns detailed tracing statements on or off (defaults to
+FALSE)}
 }
 \description{
 Generate annual truckload equivalents using FAF3 Traffic Analysis process
@@ -35,22 +29,16 @@ Generate annual truckload equivalents using FAF3 Traffic Analysis process
 \details{
 This function appends annual truckload equivalents to the FHWA
   Freight Analysis Framework (FAF) commodity flow forecast database. The
-  process is based upon the FAF3 Traffic Analysis report developed by 
+  process is based upon the FAF3 Traffic Analysis report developed by
   Battelle, which maps tonnage to truckload equivalents, including empty
   trucks. The function requires reformatted FAF data that replaces several
-  numeric values with strings that are more intuitive, adds the distance
-  traveled between FAF region centroids to each record, and converts the data
-  from the wide format FHWA distributes it in to tall format, with separate
-  record for each foreast year for each origin-destination-mode-commodity
-  combination. The function also requires three tables from Chapter 3 of the
-  FAF Traffic Analysis report, and then follows their methodology exactly 
-  (but without the errors in the report). Because the SWIM simulation runs
-  through time the data are mapped to the closest FAF forecast year for each
-  year in the simulation. The function returns an updated FAF database with
-  truckload equivalents appended to each record.
+  numeric values with strings that are more intuitive and retains data only
+  for the target year. The function also requires three tables from Chapter 3
+  of the FAF Traffic Analysis report, and then follows their methodology
+  exactly (but without the errors in the report). The function returns an
+  updated FAF database with truckload equivalents appended to each record.
 }
 \examples{
 faf_annual_trucks <- create_annual_faf_truckloads(faf_data,
-  truck_allocation_factors, truck_equivalency_factors, empty_truck_factors,
-  2020)  # Accepts the default for cluster log and does not save output
+  truck_allocation_factors, truck_equivalency_factors, empty_truck_factors)
 }
