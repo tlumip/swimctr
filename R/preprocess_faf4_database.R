@@ -67,9 +67,9 @@ preprocess_faf4_database <- function(fhwa_db, target_year, interpolate = FALSE,
   internal_regions = NULL, outer_regions = NULL) {
   # Determine whether fhwa_db is a data frame or filename, and complain if not
   contents <- as.character(class(fhwa_db)[1])
-  if (contents %in% c("tbl_df", "data.frame", "data.table")) {
+  if (contents %in% c("tbl_df", "data.frame", "data.table", "spec_tbl_df")) {
     # Assume that the fhwa_db points to a valid data frame
-    print(paste("Processing FAF flow data from from contents in",
+    print(paste("Processing FAF flow data from", contents, "contents in",
       deparse(substitute(fhwa_db))), quote = FALSE)
   } else if (contents == "character") {
     # The contents can be a valid filename, but check to make sure
