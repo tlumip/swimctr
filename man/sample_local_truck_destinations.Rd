@@ -4,8 +4,13 @@
 \alias{sample_local_truck_destinations}
 \title{Simple destination choice model for local (internal) truck trips}
 \usage{
-sample_local_truck_destinations(truck_origins, skim_matrices,
-  trip_length_targets, utility_parameters, save_to = NULL)
+sample_local_truck_destinations(
+  truck_origins,
+  skim_matrices,
+  trip_length_targets,
+  utility_parameters,
+  save_to = NULL
+)
 }
 \arguments{
 \item{truck_origins}{Data frame containing discrete daily trips for each

@@ -4,8 +4,13 @@
 \alias{create_annual_faf_truckloads}
 \title{Generate annual truckload equivalents using FAF3 Traffic Analysis process}
 \usage{
-create_annual_faf_truckloads(faf_data, truck_allocation_factors,
-  truck_equivalency_factors, empty_truck_factors, debug_trace = FALSE)
+create_annual_faf_truckloads(
+  faf_data,
+  truck_allocation_factors,
+  truck_equivalency_factors,
+  empty_truck_factors,
+  debug_trace = FALSE
+)
 }
 \arguments{
 \item{faf_data}{Data frame containing reformatted FAF commodity flow database}

@@ -13,6 +13,8 @@
 #' @param outer_regions A data frame containing FAF region pairs whose flows
 #'   pass through the modeled area (optional, but if specified then
 #'   `internal_regions` must also be specified)
+#' @param value_deflator A numeric value to convert FAF values from 2012 (FAF 4
+#' year) nominal dollars to year of users choosing. Defaults to a value of 1.
 #'
 #' @details This function converts the FHWA Freight Analysis Framework (FAF)
 #'   commodity flows, measured in annual tons, dollars, and ton-miles
@@ -55,6 +57,12 @@
 #'   remove any unwanted fields before or after passing the `outer_region`
 #'   definitions to this function.
 #'
+#'   FAF4 reports values flow of commodities in 2012 nominal US dollars. These
+#'   values can be changed to a different year dollar value by passing an
+#'   appropriate gdp deflator value to `value_deflator`. The site
+#'   https://www.bea.gov/data/gdp/gross-domestic-product can be used as a
+#'   reference.
+#'
 #' @export
 #' @examples
 #' annual_flows <- preprocess_faf4_database(fhwa_database, 2018, FALSE,
@@ -64,7 +72,7 @@
 
 
 preprocess_faf4_database <- function(fhwa_db, target_year, interpolate = FALSE,
-  internal_regions = NULL, outer_regions = NULL) {
+  internal_regions = NULL, outer_regions = NULL, value_deflator=1) {
   # Determine whether fhwa_db is a data frame or filename, and complain if not
   contents <- as.character(class(fhwa_db)[1])
   if (contents %in% c("tbl_df", "data.frame", "data.table", "spec_tbl_df")) {
@@ -108,7 +116,7 @@ preprocess_faf4_database <- function(fhwa_db, target_year, interpolate = FALSE,
   # closest to the target year and scale them on the fly
   fhwa_db$year <- faf_year
   fhwa_db$exp_tons <- fhwa_db[[paste0("tons_", faf_year)]] * 1e3
-  fhwa_db$exp_value <- fhwa_db[[paste0("value_", faf_year)]] * 1e6
+  fhwa_db$exp_value <- fhwa_db[[paste0("value_", faf_year)]] * 1e6 * value_deflator
   fhwa_db$exp_tmiles <- fhwa_db[[paste0("tmiles_", faf_year)]] * 1e6
   fhwa_db$year <- target_year   # Reset to the user-specified year afterwards
 

@@ -4,9 +4,15 @@
 \alias{allocate_faf_to_zones}
 \title{Allocate FAF daily truck flows to traffic analysis zones}
 \usage{
-allocate_faf_to_zones(daily_faf_trips, synthetic_firms, makeuse,
-  intermodal_connectors, external_gateways, cluster_log = "cluster.log",
-  save_to = NULL)
+allocate_faf_to_zones(
+  daily_faf_trips,
+  synthetic_firms,
+  makeuse,
+  intermodal_connectors,
+  external_gateways,
+  cluster_log = "cluster.log",
+  save_to = NULL
+)
 }
 \arguments{
 \item{daily_faf_trips}{Data frame containing discrete daily FAF truck trips}
