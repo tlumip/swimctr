@@ -118,6 +118,7 @@ preprocess_faf4_database <- function(fhwa_db, target_year, interpolate = FALSE,
     fhwa_db[[paste0("tons_", this_year)]] <- NULL
     fhwa_db[[paste0("value_", this_year)]] <- NULL
     fhwa_db[[paste0("tmiles_", this_year)]] <- NULL
+    fhwa_db[[paste0("curval_", this_year)]] <- NULL
   }
 
   # Before we do anything else we need to recast several variables as numeric if
@@ -140,6 +141,8 @@ preprocess_faf4_database <- function(fhwa_db, target_year, interpolate = FALSE,
     if (!is.null(outer_regions)) stop(paste("No internal regions were",
       "specified, but outer regions were"))
   } else {
+    # Convert internal regions string to numeric array
+    internal_regions = as.numeric(unlist(strsplit(internal_regions, split=",")))
     # Define the direction codes for those regions specified as internal
     recast$direction <- ifelse(recast$dms_orig %in% internal_regions &
         recast$dms_dest %in% internal_regions, "internal", recast$direction)
@@ -156,10 +159,15 @@ preprocess_faf4_database <- function(fhwa_db, target_year, interpolate = FALSE,
       # The outer region flows are usually coded as one way, but of course the
       # flows move in opposite direction as well. Thus, we'll first need to add
       # the other direction to the flows.
+      names(outer_regions) <- gsub("faf", "dms", names(outer_regions))
       opposite_direction <- outer_regions %>%
         dplyr::mutate(temp = dms_orig, dms_orig = dms_dest, dms_dest = temp) %>%
         dplyr::mutate(temp = entry, entry = exit, exit = temp, temp = NULL)
       outer_regions <- dplyr::bind_rows(outer_regions, opposite_direction)
+      outer_regions[["entry"]] <- NULL
+      outer_regions[["exit"]] <- NULL
+      outer_regions[["state"]] <- NULL
+      outer_regions[["description"]] <- NULL
 
       # Now we can merge the flow data with these outer region definitions,
       # which will allow us to carry forward any data included in the latter
@@ -207,7 +215,8 @@ preprocess_faf4_database <- function(fhwa_db, target_year, interpolate = FALSE,
 
   # Show us the total flows by mode and direction
   print("Annual tonnage by direction and mode for modeled area:", quote = FALSE)
-  print(addmargins(xtabs(exp_tons ~ domestic_mode + direction, data = keep)))
+  print(noquote(apply(addmargins(xtabs(exp_tons ~ domestic_mode + direction,
+                                       data=keep)), 2, scales::comma)))
 
   # Return the results
   return(keep)
