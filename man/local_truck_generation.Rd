@@ -4,9 +4,14 @@
 \alias{local_truck_generation}
 \title{Generate local truck trips (tour segments) from pseudo-firms}
 \usage{
-local_truck_generation(synthetic_firms, generation_probabilities,
-  random_seed = 1, max_resampling_attempts = 30,
-  max_resampling_threshold = 0.5, save_to = NULL)
+local_truck_generation(
+  synthetic_firms,
+  generation_probabilities,
+  random_seed = 1,
+  max_resampling_attempts = 30,
+  max_resampling_threshold = 0.5,
+  save_to = NULL
+)
 }
 \arguments{
 \item{synthetic_firms}{Data frame containing pseudo-firms and their

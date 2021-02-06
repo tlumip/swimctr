@@ -4,8 +4,11 @@
 \alias{read_skim_matrices}
 \title{Convert time and distance skim matrices in OMX format to data frame format}
 \usage{
-read_skim_matrices(distance_skimsFN = NULL, time_skimsFN = NULL,
-  save_to = NULL)
+read_skim_matrices(
+  distance_skimsFN = NULL,
+  time_skimsFN = NULL,
+  save_to = NULL
+)
 }
 \arguments{
 \item{distance_skimsFN}{Fully-qualified filename of distance skim matrix in

@@ -4,8 +4,12 @@
 \alias{create_synthetic_firms}
 \title{Create synthetic pseudo-firms}
 \usage{
-create_synthetic_firms(zonal_data, sector_equivalencies, alpha2beta,
-  save_to = NULL)
+create_synthetic_firms(
+  zonal_data,
+  sector_equivalencies,
+  alpha2beta,
+  save_to = NULL
+)
 }
 \arguments{
 \item{zonal_data}{Data frame containing traffic analysis zone attributes, to

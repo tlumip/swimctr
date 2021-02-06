@@ -69,15 +69,15 @@ preprocess_faf4_database <- function(fhwa_db, target_year, interpolate = FALSE,
   contents <- as.character(class(fhwa_db)[1])
   if (contents %in% c("tbl_df", "data.frame", "data.table", "spec_tbl_df")) {
     # Assume that the fhwa_db points to a valid data frame
-    print(paste("Processing FAF flow data from", contents, "contents in",
-      deparse(substitute(fhwa_db))), quote = FALSE)
+    message("Processing FAF flow data from ", contents, " contents in ",
+      deparse(substitute(fhwa_db)))
   } else if (contents == "character") {
     # The contents can be a valid filename, but check to make sure
     if (!file.exists(fhwa_db)) {
       stop(paste0("The fhwa_db parameter ", fhwa_db,
         " appears to be a string but does not specify a valid filename"))
     } else {
-      print(paste("Build FAF flows data frame from", fhwa_db), quote = FALSE)
+      message("Building FAF flows tibble from ", fhwa_db)
       fhwa_db <- readr::read_csv(fhwa_db, guess_max = Inf)
     }
   } else {
@@ -101,8 +101,8 @@ preprocess_faf4_database <- function(fhwa_db, target_year, interpolate = FALSE,
   # the year closest to our target year
   offsets <- abs(years_found - target_year)
   faf_year <- years_found[which.min(offsets)]
-  print(paste("FAF data from", faf_year, "is closest to target year",
-    target_year), quote = FALSE)
+  message("FAF data from ", faf_year, " is closest to target year ",
+    target_year)
 
   # Append the tonnage, value, and ton-miles to each record from the FAF year
   # closest to the target year and scale them on the fly
@@ -196,18 +196,19 @@ preprocess_faf4_database <- function(fhwa_db, target_year, interpolate = FALSE,
   # Drop the records whose direction are not internal, inbound, outbound, or
   # through
   keep <- dplyr::filter(redo_transport_mode, direction != "drop")
-  print(paste(nrow(keep), "records retained:"), quote = FALSE)
-  print(table(keep$direction, useNA = "ifany"))
+  message(nrow(keep), " records retained:")
+  message(table(keep$direction, useNA = "ifany"))
 
   # How many records have zero transactions?
   n_zeros <- nrow(dplyr::filter(keep, exp_value <= 0.0, exp_tons <= 0.0))
   pct_zeros <- swimctr::percent(n_zeros, nrow(keep))
-  print(paste0(n_zeros, " of ", nrow(keep), " records (", pct_zeros,
-    "%) have zero tons and value coded"), quote = FALSE)
+  message(n_zeros, " of ", nrow(keep), " records (", pct_zeros,
+    "%) have zero tons and value coded")
 
   # Show us the total flows by mode and direction
-  print("Annual tonnage by direction and mode for modeled area:", quote = FALSE)
-  print(addmargins(xtabs(exp_tons ~ domestic_mode + direction, data = keep)))
+  message("Annual tonnage by direction and mode for modeled area:")
+  message(addmargins(xtabs(exp_tons ~ domestic_mode + direction, data = keep,
+    na.action = na.pass, exclude = NULL)))
 
   # Return the results
   return(keep)

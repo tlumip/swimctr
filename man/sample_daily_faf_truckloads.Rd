@@ -4,9 +4,14 @@
 \alias{sample_daily_faf_truckloads}
 \title{Sample daily truck trips from annual FAF flow database}
 \usage{
-sample_daily_faf_truckloads(annual_faf_trucks,
-  external_scaling_factor = 1, weeks_per_year = 50, target_week = 17,
-  target_day = 4, debug_trace = FALSE)
+sample_daily_faf_truckloads(
+  annual_faf_trucks,
+  external_scaling_factor = 1,
+  weeks_per_year = 50,
+  target_week = 17,
+  target_day = 4,
+  debug_trace = FALSE
+)
 }
 \arguments{
 \item{annual_faf_trucks}{Data frame containing reformatted FAF commodity flow

@@ -4,8 +4,13 @@
 \alias{preprocess_faf4_database}
 \title{Transform FAF flow database distributed by FHWA into format for target year}
 \usage{
-preprocess_faf4_database(fhwa_db, target_year, interpolate = FALSE,
-  internal_regions = NULL, outer_regions = NULL)
+preprocess_faf4_database(
+  fhwa_db,
+  target_year,
+  interpolate = FALSE,
+  internal_regions = NULL,
+  outer_regions = NULL
+)
 }
 \arguments{
 \item{fhwa_db}{Data frame containing the FAF interregional flow database in
