@@ -17,4 +17,4 @@
 #' df$pct_varname <- percent(df$varname)/100.0    # Normalized value
 #' df$pct_change <- percent(df$current, (df$current - df$prior), 3)  # % change
 
-percent <- function(x, y = sum(x), places = 1) round((x/y)*100, places)
+percent <- function(x, y = sum(x), places = 1) round((x / y) * 100, places)

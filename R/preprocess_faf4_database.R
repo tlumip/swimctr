@@ -9,8 +9,9 @@
 #'   not one of the years included in the FAF database (defaults to FALSE,
 #'   currently ignored)
 #' @param internal_regions A set of one or more FAF regions internal to the
-#'   study area (optional, but must be specified if `outer_regions` is defined)
-#' @param outer_regions A data frame containing FAF region pairs whose flows
+#'   study area (optional, but must be specified if `external_regions` is
+#'   defined)
+#' @param external_regions A data frame containing FAF region pairs whose flows
 #'   pass through the modeled area (optional, but if specified then
 #'   `internal_regions` must also be specified)
 #'
@@ -47,11 +48,11 @@
 #'   omitted data from the entire USA will be considered internal to the model.
 #'
 #'   Flows likely to pass through one or more internal regions can be included
-#'   as `outer_regions`. Such flows must be defined as FAF region pairs (e.g.,
+#'   as `external_regions`. Such flows must be defined as FAF region pairs (e.g.,
 #'   truck flows between California and Washington on I-5 if Oregon comprises
 #'   the internal regions). The flows are assumed to be bidirectional to reduce
 #'   the amount of coding required. Note that any additional fields in
-#'   `outer_regions` will be added to the FAF flows records. The user should
+#'   `external_regions` will be added to the FAF flows records. The user should
 #'   remove any unwanted fields before or after passing the `outer_region`
 #'   definitions to this function.
 #'
@@ -60,24 +61,27 @@
 #' annual_flows <- preprocess_faf4_database(fhwa_database, 2018, FALSE,
 #'   c(411, 419, 532))  # Several internal regions and no outer regions defined
 #' annual_flows <- preprocess_faf4_database("./faf4.4.1.zip", 2016, FALSE,
-#'   160, idaho_outer_regions)   # A single internal and multiple outer regions
+#'   160, oregon_outer_regions)   # A single internal and multiple outer regions
 
 
 preprocess_faf4_database <- function(fhwa_db, target_year, interpolate = FALSE,
-  internal_regions = NULL, outer_regions = NULL) {
+  internal_regions = NULL, external_regions = NULL) {
+  # Introduce yourself
+  message(swimctr:::self_identify(match.call()))
+
   # Determine whether fhwa_db is a data frame or filename, and complain if not
   contents <- as.character(class(fhwa_db)[1])
   if (contents %in% c("tbl_df", "data.frame", "data.table", "spec_tbl_df")) {
     # Assume that the fhwa_db points to a valid data frame
-    message("Processing FAF flow data from ", contents, " contents in ",
-      deparse(substitute(fhwa_db)))
+    print(paste("Processing FAF flow data from", contents, "contents in",
+      deparse(substitute(fhwa_db))), quote = FALSE)
   } else if (contents == "character") {
     # The contents can be a valid filename, but check to make sure
     if (!file.exists(fhwa_db)) {
       stop(paste0("The fhwa_db parameter ", fhwa_db,
         " appears to be a string but does not specify a valid filename"))
     } else {
-      message("Building FAF flows tibble from ", fhwa_db)
+      print(paste("Build FAF flows data frame from", fhwa_db), quote = FALSE)
       fhwa_db <- readr::read_csv(fhwa_db, guess_max = Inf)
     }
   } else {
@@ -89,20 +93,17 @@ preprocess_faf4_database <- function(fhwa_db, target_year, interpolate = FALSE,
   # coded in the tons fields in the file header. There is probably some super
   # efficient way of doing all of this in one line of obscure code, but few
   # enough fields to chop through to make the least efficient way fast enough.
-  years_found <- c()
-  for (this_field in names(fhwa_db)) {
-    if (substr(this_field, 1 , 5) == "tons_") {
-      this_year <- as.integer(substr(this_field, 6, 9))
-      years_found <- c(years_found, this_year)
-    }
-  }
+  yf <- grep("tons_", colnames(fhwa_db), value = TRUE)
+  years_found <- as.integer(sub("tons_", "", yf))
+  print(paste("Years in FAF dataset:", paste0(years_found, collapse = " ")),
+    quote = FALSE)
 
   # Finding the closest year in the dataset should now be easy, as we can find
   # the year closest to our target year
   offsets <- abs(years_found - target_year)
   faf_year <- years_found[which.min(offsets)]
-  message("FAF data from ", faf_year, " is closest to target year ",
-    target_year)
+  print(paste("Using data from closest FAF year", faf_year, "to target year",
+    target_year), quote = FALSE)
 
   # Append the tonnage, value, and ton-miles to each record from the FAF year
   # closest to the target year and scale them on the fly
@@ -137,8 +138,8 @@ preprocess_faf4_database <- function(fhwa_db, target_year, interpolate = FALSE,
 
     # But they cannot specify outer regions in that case, as they don't make
     # sense within this context
-    if (!is.null(outer_regions)) stop(paste("No internal regions were",
-      "specified, but outer regions were"))
+    if (!is.null(external_regions)) stop(paste("No internal regions were",
+      "specified, but external regions were"))
   } else {
     # Define the direction codes for those regions specified as internal
     recast$direction <- ifelse(recast$dms_orig %in% internal_regions &
@@ -152,28 +153,28 @@ preprocess_faf4_database <- function(fhwa_db, target_year, interpolate = FALSE,
     # define internal regions but leave outer regions undefined. We will do this
     # by merging the outer region data with the data frame. We will tag those
     # regions as through movements.
-    if (!is.null(outer_regions)) {
+    if (!is.null(external_regions)) {
       # The outer region flows are usually coded as one way, but of course the
       # flows move in opposite direction as well. Thus, we'll first need to add
       # the other direction to the flows.
-      opposite_direction <- outer_regions %>%
+      opposite_direction <- external_regions %>%
         dplyr::mutate(temp = dms_orig, dms_orig = dms_dest, dms_dest = temp) %>%
         dplyr::mutate(temp = entry, entry = exit, exit = temp, temp = NULL)
-      outer_regions <- dplyr::bind_rows(outer_regions, opposite_direction)
+      external_regions <- dplyr::bind_rows(external_regions, opposite_direction)
 
       # Now we can merge the flow data with these outer region definitions,
       # which will allow us to carry forward any data included in the latter
-      recast <- dplyr::left_join(recast, outer_regions, by = c("dms_orig",
+      recast <- dplyr::left_join(recast, external_regions, by = c("dms_orig",
           "dms_dest"))
 
       # And finally, tag the outer regions as through flows. We will process the
       # list of all through flows as we cannot tag based upon unique or non-
-      # missing contents outer_regions because we don't know for sure what
+      # missing contents external_regions because we don't know for sure what
       # fields, if any, will be included other than domestic O and D.
-      n_outer_regions <- nrow(outer_regions)
-      for (i in (1:n_outer_regions)) {
-        recast$direction <- ifelse(recast$dms_orig == outer_regions$dms_orig[i] &
-            recast$dms_dest == outer_regions$dms_dest[i], "through",
+      n_external_regions <- nrow(external_regions)
+      for (i in (1:n_external_regions)) {
+        recast$direction <- ifelse(recast$dms_orig == external_regions$dms_orig[i] &
+            recast$dms_dest == external_regions$dms_dest[i], "through",
           recast$direction)
       }
     }
@@ -182,34 +183,38 @@ preprocess_faf4_database <- function(fhwa_db, target_year, interpolate = FALSE,
   # The trade type is coded as numeric variable, but it will make downstream use
   # less error-prone to recast as descriptive string. In this case we only need
   # to differentiate between domestic and cross-border flows.
-  redo_trade_type <- dplyr::mutate(recast, trade_type = ifelse(trade_type == 1,
-    "domestic", ifelse(trade_type %in% c(2, 3), "x-border", NA)))
+  redo_trade_type <- mutate(recast,
+    trade_type = case_when(trade_type == 1 ~ "domestic",
+      trade_type %in% c(2, 3) ~ "x-border", TRUE ~ NA_character_))
 
   # We should also recode the mode of transport while we're at it
-  redo_transport_mode <- dplyr::mutate(redo_trade_type,
-    domestic_mode = ifelse(dms_mode == 1, "Truck", ifelse(dms_mode == 2, "Rail",
-      ifelse(dms_mode == 3, "Water", ifelse(dms_mode == 4, "Air",
-        ifelse(dms_mode == 5, "Multiple", ifelse(dms_mode == 6, "Pipeline",
-          ifelse(dms_mode == 7, "Other", ifelse(dms_mode == 8, "None",
-            NA)))))))))
+  redo_transport_mode <- mutate(redo_trade_type,
+  	domestic_mode = case_when(dms_mode == 1 ~ "Truck", dms_mode == 2 ~ "Rail",
+  	  dms_mode == 3 ~ "Water", dms_mode == 4 ~ "Air", dms_mode == 6 ~ "Multiple",
+  	  dms_mode == 7 ~ "Other", dms_mode == 8 ~ "Other", TRUE ~ NA_character_))
 
   # Drop the records whose direction are not internal, inbound, outbound, or
   # through
   keep <- dplyr::filter(redo_transport_mode, direction != "drop")
-  message(nrow(keep), " records retained:")
-  message(table(keep$direction, useNA = "ifany"))
+  print(paste(nrow(keep), "records retained:"), quote = FALSE)
+  print(table(keep$direction, useNA = "ifany"))
 
   # How many records have zero transactions?
   n_zeros <- nrow(dplyr::filter(keep, exp_value <= 0.0, exp_tons <= 0.0))
   pct_zeros <- swimctr::percent(n_zeros, nrow(keep))
-  message(n_zeros, " of ", nrow(keep), " records (", pct_zeros,
-    "%) have zero tons and value coded")
+  print(paste0(n_zeros, " of ", nrow(keep), " records (", pct_zeros,
+    "%) have zero tons and value coded"), quote = FALSE)
 
   # Show us the total flows by mode and direction
-  message("Annual tonnage by direction and mode for modeled area:")
-  message(addmargins(xtabs(exp_tons ~ domestic_mode + direction, data = keep,
-    na.action = na.pass, exclude = NULL)))
+  print("Annual tonnage by direction and mode for modeled area:", quote = FALSE)
+  print(addmargins(xtabs(exp_tons ~ domestic_mode + direction, data = keep)))
+
+  # FHWA started recently adding current value fields for past years to the
+  # file, which we have no use for. So they will be among the fields that we
+  # jettison before we return the results. We can add other fields here in the
+  # future as needed.
+  drop_current_values <- keep[, !grepl("curval", colnames(keep))]
 
   # Return the results
-  return(keep)
+  return(drop_current_values)
 }

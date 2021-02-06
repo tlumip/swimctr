@@ -4,18 +4,14 @@
 \alias{export_trip_list}
 \title{Export local and inter-regional trip records in a combined trip list file}
 \usage{
-export_trip_list(hourly_faf_trips, hourly_local_trips, save_to)
+export_trip_list(hourly_faf_trips, hourly_local_trips)
 }
 \arguments{
-\item{hourly_faf_trips}{Data frame containing the final inter-regional flows,
+\item{hourly_faf_trips}{A tibble containing the final inter-regional flows,
 with origin, destination, and departure time appended for each trip}
 
-\item{hourly_local_trips}{Data frame containing the final local (internal)'
-truck flows, with origin, destination, and departure time appended for each
-trip}
-
-\item{save_to}{Filename for saving the final combined trip list in comma-
-separated value (CSV) format}
+\item{hourly_local_trips}{A tibble containing the final local truck tour
+flows, with origin, destination, and departure time appended for each trip}
 }
 \description{
 Export local and inter-regional trip records in a combined trip list file
@@ -24,10 +20,11 @@ Export local and inter-regional trip records in a combined trip list file
 This function will typically be the last part of the model to run,
   for it combines the local and inter-regional truck trip records into a
   single trip file, with common fields for both. Missing values are inserted
-  for data present in one dataset, but not in the other. The result is saved
-  in a file for network analyses or post-processing. No values are returned
-  by the function.
+  for data present in one dataset, but not in the other. The result is a
+  tibble with trips from both datasets in common value expected by later
+  SWIM2 components. Code NULL if one of the input tibbles is to be skipped
+  during model testing.
 }
 \examples{
-export_trip_list(hourly_faf_trips, hourly_local_trips, "Trips_CTTruck.csv")
+export_trip_list(hourly_faf_trips, hourly_local_trips)
 }
