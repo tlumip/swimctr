@@ -45,12 +45,14 @@
 get_runtime_parameters <- function(propertiesFN, format = "java",
   delimiter = '=', import_flag = '&', echo_parameters = TRUE, save_to = NULL) {
   require(stringr)  # package prefix omitted in this function for brevity sake
+  # Introduce yourself
+  message(swimctr:::self_identify(match.call()))
 
   # How we will read the parameters file will depend upon how it is coded. For
   # now the only supported type is java.
   supported_formats <- c("java")
   if (!format %in% supported_formats) {
-    error_message <- paste("Format", format, "is not supported")
+    error_message <- paste(format, "format not supported")
     stop(error_message)
   }
 
@@ -67,17 +69,16 @@ get_runtime_parameters <- function(propertiesFN, format = "java",
     # split them. Start by extracting the token names. Remember that str_locate
     # returns two values: the first and last occurrences of the character in the
     # string. We only need the first value in this case.
-    params <- dplyr::data_frame(token = str_trim(str_sub(noquotes, 1,
-      str_locate(notabs, delimiter)[,1]-1)))
+    params <- dplyr::tibble(token = str_trim(str_sub(noquotes, 1,
+      str_locate(notabs, delimiter)[,1] - 1)))
 
     # Next isolate the value associated with each token
     params$value <- str_trim(str_sub(noquotes,
-      str_locate(noquotes, delimiter)[,1]+1, str_length(noquotes)))
+      str_locate(noquotes, delimiter)[,1] + 1, str_length(noquotes)))
     params$value <- str_replace_all(params$value, " ", "")  # Remove spaces
 
     # Finally, we need to determine whether the string we read for the value is
-    # indeed what the user intended, or whether it is a pointer to a file that
-    # should be read to obtain the contents. Thus, we look for a leading import
+    # a literal value or pointer to a file. Thus, we look for a leading import
     # flag, which is specified in function list.
     params$flag <- ifelse(substr(params$value, 1, 1) == import_flag, "file",
       "literal")
@@ -85,7 +86,7 @@ get_runtime_parameters <- function(propertiesFN, format = "java",
       substr(params$value, 2, str_length(params$value)))
     # End java format handling
   } else {
-    error_message <- paste("Format", format, "not yet supported")
+    error_message <- paste(format, "format not supported")
     stop(error_message)
   }
 
@@ -106,10 +107,10 @@ get_runtime_parameters <- function(propertiesFN, format = "java",
   all_tokens <- unique(params$token)
   if (!"root.dir" %in% all_tokens) {
     params <- dplyr::bind_rows(
-      dplyr::data_frame(token = "root.dir", value = "./", flag = "literal",
+      dplyr::tibble(token = "root.dir", value = "./", flag = "literal",
         seq = 0),
       params)
-    ct_msg(paste("Required parameter root.dir assumed to be", getwd()))
+    print(paste("Required parameter root.dir assumed to be", getwd()))
   }
   params <- dplyr::arrange(params, seq)
 
@@ -127,7 +128,7 @@ get_runtime_parameters <- function(propertiesFN, format = "java",
       if (!file.exists(filename)) {
         # If the file does not exist in the current directory then look for it
         # in the root.dir folder
-        if (nchar(RTP[["root.dir"]])<1) {
+        if (nchar(RTP[["root.dir"]]) < 1) {
           error_message <- paste("Somehow root.dir is not defined at seq=",
             params$seq[i])
           stop(error_message)
@@ -135,14 +136,16 @@ get_runtime_parameters <- function(propertiesFN, format = "java",
           filename <- file.path(RTP[["root.dir"]], filename)
         }
 
-        # If the file isn't there, either, then stop
+        # Stop if the file isn't there, either
         if (!file.exists(filename)) {
           error_message <- paste(params$value[i], "not found in either the",
             "current folder or in root.dir")
           stop(error_message)
         }
       }
-      RTP[[params$token[i]]] <- readr::read_csv(filename)
+      # Silently read the file contents into the associated token
+      RTP[[params$token[i]]] <- readr::read_csv(filename, guess_max = 2e6,
+        col_types = cols())
     }
   }
 
@@ -154,18 +157,18 @@ get_runtime_parameters <- function(propertiesFN, format = "java",
     "scenario.outputs", "alpha2beta.file", "highway.assign.previous.skim.path",
     "pecas.makeuse", "pecas.zonal.employment")
 
-  # In addition, we want to save anything that has "ct." or "faf." prefix
+  # In addition, save anything that has "ct.", "cvs." or "faf." prefix
   for (this_token in all_tokens) {
     # Find the first dot character in the token name
     first_dot <- str_locate(this_token, '\\.')[,1]
     prefix <- substr(this_token, 1, first_dot)
-    if (prefix %in% c("ct.", "faf.")) keep <- c(keep, this_token)
+    if (prefix %in% c("ct.", "cvs.", "faf.")) keep <- c(keep, this_token)
   }
   keep <- sort(keep)
 
   # Finally, print the parameters unless the user has told us not to
   if (echo_parameters == TRUE) {
-    ct_msg("Runtime parameters:")
+    print("Runtime parameters:", quote = FALSE)
     for (this_token in keep) {
       if (!this_token %in% all_tokens) next  # Skip kept tokens that don't exist
       if (is.data.frame(RTP[[this_token]])) {
@@ -174,7 +177,7 @@ get_runtime_parameters <- function(propertiesFN, format = "java",
       } else {
         S <- paste(this_token, ": ", RTP[[this_token]], sep = '')
       }
-      ct_msg(S)
+      print(S, quote = FALSE)
     }
   }
 
@@ -183,7 +186,7 @@ get_runtime_parameters <- function(propertiesFN, format = "java",
   if (!is.null(save_to)) {
     filename <- file.path(RTP[["root.dir"]], "ct_runtime_parameters.RData")
     save(RTP, file = filename)
-    ct_msg(paste("Runtime parameters saved to", filename))
+    print(paste("Runtime parameters saved to", filename), quote = FALSE)
   }
 
   # There is nothing to return, for the RTP environment is already populated

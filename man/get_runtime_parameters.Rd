@@ -4,8 +4,14 @@
 \alias{get_runtime_parameters}
 \title{Read the runtime parameters file and store them in environment}
 \usage{
-get_runtime_parameters(propertiesFN, format = "java", delimiter = "=",
-  import_flag = "&", echo_parameters = TRUE, save_to = NULL)
+get_runtime_parameters(
+  propertiesFN,
+  format = "java",
+  delimiter = "=",
+  import_flag = "&",
+  echo_parameters = TRUE,
+  save_to = NULL
+)
 }
 \arguments{
 \item{propertiesFN}{Filename containing the runtime parameters, with full

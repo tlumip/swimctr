@@ -4,23 +4,24 @@
 \alias{sample_local_truck_destinations}
 \title{Simple destination choice model for local (internal) truck trips}
 \usage{
-sample_local_truck_destinations(truck_origins, skim_matrices,
-  trip_length_targets, utility_parameters, save_to = NULL)
+sample_local_truck_destinations(
+  truck_origins,
+  skim_matrices,
+  trip_length_targets,
+  utility_parameters
+)
 }
 \arguments{
-\item{truck_origins}{Data frame containing discrete daily trips for each
-tour, usually produced by a trip or tour generation function}
+\item{truck_origins}{A tibble containing discrete daily trips for each tour,
+usually produced by a trip or tour generation function}
 
-\item{skim_matrices}{Data frame containing skim distance and travel time for
+\item{skim_matrices}{A tibble containing skim distance and travel time for
 each origin-destination pair, usually only containing records for zone
 pairs that fall within user-defined threshold (i.e., excludes what would be
 only a long-distance trip)}
 
-\item{utility_parameters}{Data frame containing weights for distance and
+\item{utility_parameters}{A tibble containing weights for distance and
 attractors for each truck type defined in the simulation}
-
-\item{save_to}{File name for saving the trip records with destinations
-appended in comma-separated value format (optional)}
 }
 \description{
 Simple destination choice model for local (internal) truck trips
@@ -43,5 +44,5 @@ This is a simple destination choice model that mimics a singly-
 }
 \examples{
 sample_local_truck_destinations(truck_origins, skim_matrices,
-  utility_parameters, "daily-truck-odflows.csv")
+  utility_parameters)
 }
