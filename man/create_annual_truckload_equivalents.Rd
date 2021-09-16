@@ -9,7 +9,7 @@ create_annual_truckload_equivalents(
   truck_allocation_factors,
   payload_distributions,
   stop_frequencies = NULL,
-  cache_size = 1e+06,
+  cache_size = 1000000,
   trace_flows = FALSE
 )
 }
@@ -52,6 +52,6 @@ This function creates a database of discrete truckload equivalents
 }
 \examples{
 faf_annual_trucks <- create_annual_truckload_equivalents(faf_data,
-  truck_allocation_factors, cvs_payload_weight_distributions, 
+  truck_allocation_factors, cvs_payload_weight_distributions,
   cvs_stop_pattern_frequencies)
 }

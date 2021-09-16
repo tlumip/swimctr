@@ -30,7 +30,7 @@
 #' @export
 #' @examples
 #' faf_annual_trucks <- create_annual_truckload_equivalents(faf_data,
-#'   truck_allocation_factors, cvs_payload_weight_distributions, 
+#'   truck_allocation_factors, cvs_payload_weight_distributions,
 #'   cvs_stop_pattern_frequencies)
 
 
@@ -193,7 +193,8 @@ create_annual_truckload_equivalents <- function(faf_flows,
       taf$maximum_range[1], ")")
 
     #---[6] --- Process each commodity flow record ----------------------------
-    results <- foreach(i = 1:nrow(these_flows), .packages = c("dplyr")) %dopar% {
+    results <- foreach(i = 1:nrow(these_flows), .packages = c("dplyr"),
+        .errorhandling = "remove") %dopar% {
       generate_discrete_trucks(these_flows[i,], sampled_trucks, band_label,
         single_stop_threshold, flow_trace = TRUE)
     }
