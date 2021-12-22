@@ -106,12 +106,18 @@ preprocess_faf4_database <- function(fhwa_db, target_year, interpolate = FALSE,
     target_year), quote = FALSE)
 
   # Append the tonnage, value, and ton-miles to each record from the FAF year
-  # closest to the target year and scale them on the fly
+  # closest to the target year and scale them on the fly.
   fhwa_db$year <- faf_year
   fhwa_db$exp_tons <- fhwa_db[[paste0("tons_", faf_year)]] * 1e3
   fhwa_db$exp_value <- fhwa_db[[paste0("value_", faf_year)]] * 1e6
-  fhwa_db$exp_tmiles <- fhwa_db[[paste0("tmiles_", faf_year)]] * 1e6
   fhwa_db$year <- target_year   # Reset to the user-specified year afterwards
+
+  # The ton-miles variable
+  # `tmiles_xxxx` has at least temporarily disappeared from the FAF v5 data so
+  # handle its omission.
+  ton_miles <- paste0("tmiles_", faf_year)
+  fhwa_db$exp_tmiles <- ifelse(!ton_miles %in% colnames(fhwa_db), NA,
+    fhwa_db[[ton_miles]] * 1e6)
 
   # Now that we have tonnage, value, and ton-miles for the target year drop the
   # original fields from the data
