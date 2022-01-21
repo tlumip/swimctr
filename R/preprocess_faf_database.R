@@ -14,6 +14,13 @@
 #' @param external_regions A data frame containing FAF region pairs whose flows
 #'   pass through the modeled area (optional, but if specified then
 #'   `internal_regions` must also be specified)
+#' @param ignored_regions A list of FAF regions for which valid distances are
+#'   not required. The FAF regions in Hawaii (511, 519) are the default values
+#'   for this parameter, as it is not possible to drive to there or back.
+#' @param distances An overloaded parameter that defines how missing values of
+#'   weighted interregional distances are handled in FAF source data (defaults
+#'   to NULL, which stops the program if the `wgt_dist` variable is not found in
+#'   the data)
 #'
 #' @details This function converts the FHWA Freight Analysis Framework (FAF)
 #'   commodity flows, measured in annual tons, dollars, and ton-miles
@@ -56,16 +63,31 @@
 #'   remove any unwanted fields before or after passing the `outer_region`
 #'   definitions to this function.
 #'
+#'   The `distance` parameter controls how this function responds to missing
+#'   values of the weighted distance (`wgt_dist`) variable in the source data.
+#'   If the value is NULL it is assumed that the variable is present and the
+#'   program fails if that is not true. If coded to NA the `wgt_dist` field is
+#'   created or overwritten with missing values. If the `distance` parameter is
+#'   a string it is assumed to correspond to fully qualified pathname to a file
+#'   that contains user-specified distances with the fields `dms_orig`,
+#'   `dms_dest`, and `wgt_dist`. If `distance` points to a tibble it is assumed
+#'   to contain the same contents.
+#'
 #' @export
 #' @examples
-#' annual_flows <- preprocess_faf4_database(fhwa_database, 2018, FALSE,
+#' annual_flows <- preprocess_faf_database(fhwa_database, 2018, FALSE,
 #'   c(411, 419, 532))  # Several internal regions and no outer regions defined
-#' annual_flows <- preprocess_faf4_database("./faf4.4.1.zip", 2016, FALSE,
+#' annual_flows <- preprocess_faf_database("./faf4.4.1.zip", 2016, FALSE,
 #'   160, oregon_outer_regions)   # A single internal and multiple outer regions
 
 
-preprocess_faf4_database <- function(fhwa_db, target_year, interpolate = FALSE,
-  internal_regions = NULL, external_regions = NULL) {
+preprocess_faf_database <- function(fhwa_db, target_year, interpolate = FALSE,
+  internal_regions = NULL, external_regions = NULL, ignored_regions = c(151, 159),
+  distances = NULL) {
+  # Introduce yourself
+  message(swimctr:::self_identify(match.call()))
+  crash <- FALSE  # Have I found unrecoverable errors yet?
+
   # Determine whether fhwa_db is a data frame or filename, and complain if not
   contents <- as.character(class(fhwa_db)[1])
   if (contents %in% c("tbl_df", "data.frame", "data.table", "spec_tbl_df")) {
@@ -78,7 +100,7 @@ preprocess_faf4_database <- function(fhwa_db, target_year, interpolate = FALSE,
       stop(paste0("The fhwa_db parameter ", fhwa_db,
         " appears to be a string but does not specify a valid filename"))
     } else {
-      print(paste("Build FAF flows data frame from", fhwa_db), quote = FALSE)
+      print(paste("Build FAF flows tibble from", fhwa_db), quote = FALSE)
       fhwa_db <- readr::read_csv(fhwa_db, guess_max = Inf)
     }
   } else {
@@ -99,16 +121,26 @@ preprocess_faf4_database <- function(fhwa_db, target_year, interpolate = FALSE,
   # the year closest to our target year
   offsets <- abs(years_found - target_year)
   faf_year <- years_found[which.min(offsets)]
-  print(paste("Using data from closest FAF year", faf_year, "to target year",
-    target_year), quote = FALSE)
+  if (faf_year == target_year) {
+    print(paste("FAF data found for target year of", target_year), quote = FALSE)
+  } else {
+    print(paste("Using data from closest FAF year", faf_year, "to target year",
+      target_year), quote = FALSE)
+  }
 
   # Append the tonnage, value, and ton-miles to each record from the FAF year
-  # closest to the target year and scale them on the fly
+  # closest to the target year and scale them on the fly.
   fhwa_db$year <- faf_year
   fhwa_db$exp_tons <- fhwa_db[[paste0("tons_", faf_year)]] * 1e3
   fhwa_db$exp_value <- fhwa_db[[paste0("value_", faf_year)]] * 1e6
-  fhwa_db$exp_tmiles <- fhwa_db[[paste0("tmiles_", faf_year)]] * 1e6
   fhwa_db$year <- target_year   # Reset to the user-specified year afterwards
+
+  # The ton-miles variable
+  # `tmiles_xxxx` has at least temporarily disappeared from the FAF v5 data so
+  # handle its omission.
+  ton_miles <- paste0("tmiles_", faf_year)
+  fhwa_db$exp_tmiles <- ifelse(!ton_miles %in% colnames(fhwa_db), NA,
+    fhwa_db[[ton_miles]] * 1e6)
 
   # Now that we have tonnage, value, and ton-miles for the target year drop the
   # original fields from the data
@@ -151,18 +183,26 @@ preprocess_faf4_database <- function(fhwa_db, target_year, interpolate = FALSE,
     # by merging the outer region data with the data frame. We will tag those
     # regions as through movements.
     if (!is.null(external_regions)) {
+      # If the user has specified a string for this parameter assume that it is
+      # a fully qualified filename. Read the data into a tibble.
+      if (is.character(external_regions)) {
+        print(paste("Reading external regions from", external_regions),
+          quote = FALSE)
+        external_regions <- readr::read_csv(external_regions, col_types = cols())
+      }
+
       # The outer region flows are usually coded as one way, but of course the
       # flows move in opposite direction as well. Thus, we'll first need to add
       # the other direction to the flows.
       opposite_direction <- external_regions %>%
         dplyr::mutate(temp = dms_orig, dms_orig = dms_dest, dms_dest = temp) %>%
         dplyr::mutate(temp = entry, entry = exit, exit = temp, temp = NULL)
-      external_regions <- dplyr::bind_rows(external_regions, opposite_direction)
+      external_regions <- bind_rows(external_regions, opposite_direction)
 
       # Now we can merge the flow data with these outer region definitions,
       # which will allow us to carry forward any data included in the latter
-      recast <- dplyr::left_join(recast, external_regions, by = c("dms_orig",
-          "dms_dest"))
+      recast <- left_join(recast, external_regions, by = c("dms_orig",
+        "dms_dest"))
 
       # And finally, tag the outer regions as through flows. We will process the
       # list of all through flows as we cannot tag based upon unique or non-
@@ -207,11 +247,57 @@ preprocess_faf4_database <- function(fhwa_db, target_year, interpolate = FALSE,
   print(addmargins(xtabs(exp_tons ~ domestic_mode + direction, data = keep)))
 
   # FHWA started recently adding current value fields for past years to the
-  # file, which we have no use for. So they will be among the fields that we 
+  # file, which we have no use for. So they will be among the fields that we
   # jettison before we return the results. We can add other fields here in the
   # future as needed.
   drop_current_values <- keep[, !grepl("curval", colnames(keep))]
 
-  # Return the results
-  return(drop_current_values)
+  # Finally, we now handle the case where interregional distances might be
+  # missing. These were introduced in FAF Version 4.x but inexplicably absent so
+  # far in Version 5. We will either crash, ignore them, or append them to these
+  # data depending on the value of the `distance` parameter.
+  if (is.null(distances) & !"wgt_dist" %in% colnames(drop_current_values)) {
+    crash <- TRUE
+    stop("Weighted distance (wgt_dist) expected in FAF data but not found")
+  } else if (is.na(distances)) {
+    # The weighted distances are missing but the user wants to continue
+    drop_current_values$wgt_dist <- NA_real_
+    warning("Missing values coded for all FAF region interchanges")
+  } else {
+    # Read data from an external file if the user has specified that
+    if (is.character(distances)) {
+      # Assume that a string value for the parameter is a fully qualified filename
+      print(paste("Appending weighted distances from", distances), quote = FALSE)
+      external.distances <- distances %>%
+        readr::read_csv(col_types = cols()) %>%
+        mutate(dms_orig = as.integer(dms_orig), dms_dest = as.integer(dms_dest))
+      export <- left_join(drop_current_values, external.distances,
+        by = c("dms_orig", "dms_dest"))
+    }
+
+    # At this point we have a tibble that contains the `wgt_dist` field that
+    # should be devoid of missing values. Not that we don't trust the user but
+    # double-check that is true before continuing...
+    problems <- filter(export, is.na(wgt_dist))
+
+    # Remove interchanges between Hawaii and the mainland, which may show up in
+    # FAF data as marine or air movements but don't concern us for land travel
+    problems <- filter(problems,
+      !(dms_orig %in% ignored_regions | dms_dest %in% ignored_regions))
+
+    # Now find the remaining disconnects between FAF regions in continental USA
+    if (nrow(problems) > 0) {
+      # Finger the missing interregional interchanges but exclude Hawaii
+      problems <- mutate(problems, pair = paste0(dms_orig, '-', dms_dest))
+      eh <- sort(unique(problems$pair))
+      print("Missing weighted distances for FAF interchanges:", quote = FALSE)
+      print(eh)
+      stop(paste("Missing weighted distances for", length(eh), "FAF interchanges"))
+    }
+  }
+
+  # Return the results, which depends on whether we found problems with the
+  # distances above
+  if (crash == TRUE) export = tibble()  # Send back an empty tibble
+  return(export)
 }

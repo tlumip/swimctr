@@ -1,3 +1,4 @@
+#' Deprecated function
 #' Transform FAF flow database distributed by FHWA into format for target year
 #'
 #' @param fhwa_db Data frame containing the FAF interregional flow database in
@@ -160,18 +161,26 @@ preprocess_faf4_database <- function(fhwa_db, target_year, interpolate = FALSE,
     # by merging the outer region data with the data frame. We will tag those
     # regions as through movements.
     if (!is.null(external_regions)) {
+      # If the user has specified a string for this parameter assume that it is
+      # a fully qualified filename. Read the data into a tibble.
+      if (is.character(external_regions)) {
+        print(paste("Reading external regions from", external_regions),
+          quote = FALSE)
+        external_regions <- readr::read_csv(external_regions, col_types = cols())
+      }
+
       # The outer region flows are usually coded as one way, but of course the
       # flows move in opposite direction as well. Thus, we'll first need to add
       # the other direction to the flows.
       opposite_direction <- external_regions %>%
         dplyr::mutate(temp = dms_orig, dms_orig = dms_dest, dms_dest = temp) %>%
         dplyr::mutate(temp = entry, entry = exit, exit = temp, temp = NULL)
-      external_regions <- dplyr::bind_rows(external_regions, opposite_direction)
+      external_regions <- bind_rows(external_regions, opposite_direction)
 
       # Now we can merge the flow data with these outer region definitions,
       # which will allow us to carry forward any data included in the latter
-      recast <- dplyr::left_join(recast, external_regions, by = c("dms_orig",
-          "dms_dest"))
+      recast <- left_join(recast, external_regions, by = c("dms_orig",
+        "dms_dest"))
 
       # And finally, tag the outer regions as through flows. We will process the
       # list of all through flows as we cannot tag based upon unique or non-

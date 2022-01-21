@@ -9,7 +9,7 @@ create_annual_truckload_equivalents(
   truck_allocation_factors,
   payload_distributions,
   stop_frequencies = NULL,
-  cache_size = 1000000,
+  cache_size = 1e+06,
   trace_flows = FALSE
 )
 }
