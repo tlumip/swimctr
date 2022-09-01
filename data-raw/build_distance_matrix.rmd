@@ -1,5 +1,5 @@
 ## Building a FAF v4.5.1 inter-regional distance matrix
-[Rick Donnelly](mailto:rick.donnelly@wsp.com) | _WSP_ | `r date()`
+[Rick Donnelly](mailto:rick.donnelly@gmail.com) | `r date()`
 ```{r init, echo = FALSE, message = FALSE, warning = FALSE}
 library(tidyverse); library(knitr); library(kableExtra)
 options(width = 98, dplyr.summarise.inform = FALSE)
@@ -10,12 +10,12 @@ kable_ <- function(df, ...) {
 ```
 
 <br>
-The `wgt_dist` variable was conveniently included in the FAF Version 4.x regional databases. It defined the weighted mean distance between the domestic origin (`dms_orig`) and destination (`dms_dest`) for each record in the database, presumably using the exact coordinates of each. The distance is weighted because there might be data for two or more firms in each OD pair or a single firm might ship to two different firms within the same destination FAF region. Unfortunately, this variable is absent from the FAF Version 5 data. We don't _need_ this variable for the `swimctr` package to work but it is nice to be able to append a distance for VMT calculations for trips with one or both trips outside of the SWIM2 halo. Thus, we can build an inter-regional distance matrix from the final FAF Version 4.5.1 database that we can append to the Version 5 data. 
+The `wgt_dist` variable was included in the FAF Version 4.x regional databases. It defined the weighted mean distance between the domestic origin (`dms_orig`) and destination (`dms_dest`) for each record in the database, presumably using the exact coordinates of each trip end. The distance is weighted because there might be two or more firms in each OD pair or a single firm might ship to two different firms within the same destination FAF region. Unfortunately, this variable is absent from the FAF Version 5 data. We don't _need_ this variable for the `swimctr` package to work but it is nice to be able to append a distance for VMT calculations for trips with one or both trips outside of the SWIM2 halo. Thus, we can build an inter-regional distance matrix from the final FAF Version 4.5.1 database that we can append to the Version 5 data. 
 
-We begin by reading the FAF v4.5.1 regional database. We are only interested in the truck mode (`dms_mode` == 1) so we can jettison interregional flows made by all other modes.
+We begin by reading the FAF v4.5.1 regional database. This file does not need to be stored with SWIM data, as we'll use it only once. We are only interested in the truck mode (`dms_mode` == 1) so we can jettison interregional flows made by all other modes.
 ```{r get_faf451}
-faf451.trucks <- "./FAF4.5.1.csv.xz" %>%
-  readr::read_csv(guess_max = 2e6, col_types = cols()) %>%
+faf451.trucks <- "/Volumes/hvelv/Data/FAF4/v4.5.1/FAF4.5.1.csv.xz" %>%
+  readr::read_csv(guess_max = 2e6, show_col_types = FALSE) %>%
   filter(!is.na(wgt_dist), dms_mode == 1) %>%
   select(dms_orig, dms_dest, tons_2017, wgt_dist, sctg2)
 ```
@@ -47,7 +47,7 @@ That did not improve the results, as all commodities have roughly the same patte
 
 ### Adding newer interchanges
 
-FAF Version 5 includes some FAF region interchanges that were not included in FAF Version 4.x, so distances won't appear in the latter for them. We can add them manually here.
+FAF Version 5 includes some FAF region interchanges that were not included in FAF Version 4.x, so distances won't appear in the latter for them. We can add them manually here. When this script is updated for FAF 6 and beyond the user will need to add to this list if required.
 ```{r add_interchanges}
 new_interchanges <- tribble(
   ~dms_orig, ~dms_dest, ~wgt_dist, ~distal_trip_end,
@@ -79,8 +79,6 @@ export <- unscaled %>%
   arrange(dms_orig, dms_dest)
 target_filename <- "faf451_distances.csv"
 readr::write_csv(export, target_filename)
-system2(paste0("./xz -9fev -T0 ", target_filename), wait = TRUE, invisible = FALSE)
 ```
 
 We will use these reweighted distances with the FAF Version 5+ data, although it will be smart to check for existance of the `wgt_dist` variable first in case FHWA reintroduces this variable in later releases.
-
