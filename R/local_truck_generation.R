@@ -32,7 +32,7 @@
 local_truck_generation <- function(synthetic_firms, generation_probabilities,
   random_seed = 1, max_resampling_attempts = 30, max_resampling_threshold = 0.5) {
   # Announce yourself
-  print(swimctr:::self_identify(match.call()), quote = FALSE)
+  message(swimctr:::self_identify(match.call()))
 
   set.seed(as.integer(random_seed))
 

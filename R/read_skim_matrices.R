@@ -21,7 +21,7 @@
 
 read_skim_matrices <- function(distance_skimsFN = NULL, time_skimsFN = NULL) {
   # Make sure that the user has specified both skim matrices
-  print(swimctr:::self_identify(match.call()), quote = FALSE)
+  message(swimctr:::self_identify(match.call()))
   if (is.null(distance_skimsFN) | is.null(time_skimsFN)) {
     stop("Both time and distance skims must be provided as inputs")
   }

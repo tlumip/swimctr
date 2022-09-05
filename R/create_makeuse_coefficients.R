@@ -27,7 +27,7 @@
 
 create_makeuse_coefficients <- function(pecas_makeuse, faf_data) {
   # Announce yourself
-  print(swimctr:::self_identify(match.call()), quote = FALSE)
+  message(swimctr:::self_identify(match.call()))
 
   # Find all of the commodities defined in the FAF flow database, which we will
   # compare to the commodities we find make and use coefficients for later

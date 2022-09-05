@@ -19,7 +19,7 @@
 
 export_trip_list <- function(hourly_faf_trips, hourly_local_trips) {
   # Announce yourself
-  print(swimctr:::self_identify(match.call()), quote = FALSE)
+  message(swimctr:::self_identify(match.call()))
 
   # Process the inter-regional (FAF) trip list first. In a few places using
   # formatC isn't enough to prevent R from stubbornly writing out 10-12

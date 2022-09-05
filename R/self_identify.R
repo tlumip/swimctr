@@ -23,9 +23,9 @@
 
 self_identify <- function(mc) {
   if (length(mc[[1]]) == 3) {
-  	result <- paste0(mc[[1]][[2]], "::", mc[[1]][[3]], "()")
+    result <- paste0(mc[[1]][[2]], "::", mc[[1]][[3]], "()")
   } else {
-  	result <- mc
+    result <- mc
   }
   paste0(result, " started on ", date())
 }

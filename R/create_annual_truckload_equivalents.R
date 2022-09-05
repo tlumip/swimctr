@@ -38,7 +38,7 @@ create_annual_truckload_equivalents <- function(faf_flows,
   truck_allocation_factors, payload_distributions, stop_frequencies = NULL,
   cache_size = 1e6, trace_flows = FALSE) {
   #---[0]--- Announce youself
-  print(swimctr:::self_identify(match.call()), quote = FALSE)
+  message(swimctr:::self_identify(match.call()))
 
   #---[1]--- Start doParallel cluster -----------------------------------------
   # Clearly we will have to parallelize this in order to obtain decent runtimes

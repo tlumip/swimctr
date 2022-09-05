@@ -9,9 +9,7 @@ preprocess_faf_database(
   target_year,
   interpolate = FALSE,
   internal_regions = NULL,
-  external_regions = NULL,
-  ignored_regions = c(151, 159),
-  distances = NULL
+  external_regions = NULL
 )
 }
 \arguments{
@@ -33,15 +31,6 @@ defined)}
 \item{external_regions}{A data frame containing FAF region pairs whose flows
 pass through the modeled area (optional, but if specified then
 `internal_regions` must also be specified)}
-
-\item{ignored_regions}{A list of FAF regions for which valid distances are
-not required. The FAF regions in Hawaii (511, 519) are the default values
-for this parameter, as it is not possible to drive to there or back.}
-
-\item{distances}{An overloaded parameter that defines how missing values of
-weighted interregional distances are handled in FAF source data (defaults
-to NULL, which stops the program if the `wgt_dist` variable is not found in
-the data)}
 }
 \description{
 Transform FAF flow database distributed by FHWA into format for target year
@@ -87,16 +76,6 @@ This function converts the FHWA Freight Analysis Framework (FAF)
   `external_regions` will be added to the FAF flows records. The user should
   remove any unwanted fields before or after passing the `outer_region`
   definitions to this function.
-
-  The `distance` parameter controls how this function responds to missing
-  values of the weighted distance (`wgt_dist`) variable in the source data.
-  If the value is NULL it is assumed that the variable is present and the
-  program fails if that is not true. If coded to NA the `wgt_dist` field is
-  created or overwritten with missing values. If the `distance` parameter is
-  a string it is assumed to correspond to fully qualified pathname to a file
-  that contains user-specified distances with the fields `dms_orig`,
-  `dms_dest`, and `wgt_dist`. If `distance` points to a tibble it is assumed
-  to contain the same contents.
 }
 \examples{
 annual_flows <- preprocess_faf_database(fhwa_database, 2018, FALSE,

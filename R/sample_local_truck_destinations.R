@@ -31,7 +31,7 @@
 
 sample_local_truck_destinations <- function(truck_origins, skim_matrices,
   trip_length_targets, utility_parameters) {
-  print(swimctr:::self_identify(match.call()), quote = FALSE)
+  message(swimctr:::self_identify(match.call()))
   simulation_start <- proc.time()
 
   # The trip length targets are defined by truck type, and provided in wide

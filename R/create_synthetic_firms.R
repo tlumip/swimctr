@@ -18,7 +18,7 @@
 create_synthetic_firms <- function(zonal_data, sector_equivalencies,
   alpha2beta) {
   # Introduce yourself
-  print(swimctr:::self_identify(match.call()), quote = FALSE)
+  message(swimctr:::self_identify(match.call()))
   
   # Start by converting from wide to tall format, so that we have a record for
   # every alpha zone+sector pair

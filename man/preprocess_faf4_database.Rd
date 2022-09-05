@@ -10,7 +10,8 @@ preprocess_faf4_database(
   target_year,
   interpolate = FALSE,
   internal_regions = NULL,
-  external_regions = NULL
+  external_regions = NULL,
+  value_deflator = 1
 )
 }
 \arguments{
@@ -32,6 +33,9 @@ defined)}
 \item{external_regions}{A data frame containing FAF region pairs whose flows
 pass through the modeled area (optional, but if specified then
 `internal_regions` must also be specified)}
+
+\item{value_deflator}{A numeric value to convert FAF values from 2012 (FAF 4
+year) nominal dollars to year of users choosing. Defaults to a value of 1.}
 }
 \description{
 Deprecated function
@@ -78,6 +82,12 @@ This function converts the FHWA Freight Analysis Framework (FAF)
   `external_regions` will be added to the FAF flows records. The user should
   remove any unwanted fields before or after passing the `outer_region`
   definitions to this function.
+
+  FAF4 reports values flow of commodities in 2012 nominal US dollars. These
+  values can be changed to a different year dollar value by passing an
+  appropriate gdp deflator value to `value_deflator`. The site
+  https://www.bea.gov/data/gdp/gross-domestic-product can be used as a
+  reference.
 }
 \examples{
 annual_flows <- preprocess_faf4_database(fhwa_database, 2018, FALSE,
