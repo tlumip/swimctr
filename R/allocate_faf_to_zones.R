@@ -171,11 +171,12 @@ allocate_faf_to_zones <- function(daily_faf_trips, synthetic_firms, makeuse,
 
   # Finally, we get to endure a lot of debugging by trying to run the daily FAF
   # trips through this
+  myCluster <- parallel::makeCluster(parallel::detectCores(),
+    outfile = RTP[["ct.cluster.logfile"]])
+  doParallel::registerDoParallel(myCluster)
+  print(paste("doParallel cluster instance started with", getDoParWorkers(),
+    "cores"), quote = FALSE)  
   simulation_start <- proc.time()
-  numberOfCores <- detectCores()
-  print(paste("Number of cores detected=", numberOfCores), quote = FALSE)
-  cluster <- makeCluster(numberOfCores, outfile = RTP[["ct.cluster.log"]])
-  registerDoParallel(cluster)
   results <- foreach(i = 1:nrow(daily_faf_trips), .packages = c("dplyr")) %dopar%
     choose_zones(daily_faf_trips[i,], i)
   assigned_zones <- bind_rows(results)
@@ -184,7 +185,7 @@ allocate_faf_to_zones <- function(daily_faf_trips, synthetic_firms, makeuse,
   # daily FAF trip records
   final <- left_join(daily_faf_trips, assigned_zones, by = "sequence")
   final$sequence <- NULL  # No longer required
-  stopCluster(cluster)
+  stopCluster(myCluster)
   simulation_stop <- proc.time()
   elapsed_seconds <- round((simulation_stop-simulation_start)[["elapsed"]], 1)
   print(paste("Simulation time=", elapsed_seconds, "seconds"), quote = FALSE)

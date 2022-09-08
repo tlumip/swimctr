@@ -19,7 +19,7 @@
 
 export_trip_list <- function(hourly_faf_trips, hourly_local_trips) {
   # Announce yourself
-  message(swimctr:::self_identify(match.call()))
+  print(swimctr:::self_identify(match.call()), quote = FALSE)
 
   # Process the inter-regional (FAF) trip list first. In a few places using
   # formatC isn't enough to prevent R from stubbornly writing out 10-12
@@ -29,8 +29,8 @@ export_trip_list <- function(hourly_faf_trips, hourly_local_trips) {
   } else {
     regional <- transmute(hourly_faf_trips,
       origin = as.integer(origin),
-      tripStartTime = as.integer(departure_time),
       destination = as.integer(destination),
+      tripStartTime = sprintf("%04d", as.integer(departure_time)),
       tourMode = direction,
       tripMode = NA,  # Formerly loaded or empty
       truckID = NA,  # TO-DO: Tag individual trucks during truck synthesis
@@ -51,8 +51,8 @@ export_trip_list <- function(hourly_faf_trips, hourly_local_trips) {
   } else {
     local <- transmute(hourly_local_trips,
       origin,
-      tripStartTime = as.integer(departure_time),
       destination,
+      tripStartTime = sprintf("%04d", as.integer(departure_time)),
       tourMode = "local",
       tripMode = NA,
       truckID = NA,
@@ -64,7 +64,8 @@ export_trip_list <- function(hourly_faf_trips, hourly_local_trips) {
   }
 
   # Now simply combine amd return the two datasets
-  combined <- bind_rows(regional, local) %>% arrange(origin, destination)
+  combined <- bind_rows(regional, local) %>%
+    arrange(origin, destination, tripStartTime)
   print(paste0(nrow(combined), " trip records generated (", nrow(regional),
     " regional and ", nrow(local), " local trips)"), quote = FALSE)
   return(combined)

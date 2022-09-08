@@ -67,7 +67,7 @@
 preprocess_faf_database <- function(fhwa_db, target_year, interpolate = FALSE,
   internal_regions = NULL, external_regions = NULL) {
   # Introduce yourself
-  message(swimctr:::self_identify(match.call()))
+  print(swimctr:::self_identify(match.call()), quote = FALSE)
   crash_signal <<- FALSE  # Have I found unrecoverable errors yet?
 
   # Determine whether fhwa_db is a data frame or filename, and complain if not
@@ -201,7 +201,8 @@ preprocess_faf_database <- function(fhwa_db, target_year, interpolate = FALSE,
 
   # Show us the total flows by mode and direction
   print("Annual tonnage by direction and mode for modeled area:", quote = FALSE)
-  print(addmargins(xtabs(exp_tons ~ domestic_mode + direction, data = keep)))
+  zed <- round(xtabs(exp_tons ~ domestic_mode + direction, data = keep), 1)
+  print(addmargins(zed))
 
   # FAF 5.x uses the midpoints of large distance bands to calculate ton miles.
   # Since we've added `wgt_dist`, introduced in FAF 4.x, to our data we can
