@@ -1,0 +1,145 @@
+## Profile differences in FAF 5.3 forecast series for Oregon
+[Rick Donnelly](mailto:rick.donnelly@gmail.com) | `r date()`
+```{r init, echo = FALSE, message = FALSE, warning = FALSE}
+suppressPackageStartupMessages(library(tidyverse))
+suppressPackageStartupMessages(library(knitr))
+suppressPackageStartupMessages(library(kableExtra))
+options(width = 98, dplyr.summarise.inform = FALSE)
+percent_ <- function(x, y = sum(x), places = 1) round((x/y)*100, places)
+kable_ <- function(df, ...) {
+  knitr::kable(df, "html") %>%
+  kable_styling(bootstrap_options = c("condensed", "striped"), full_width = FALSE, font_size = 13)
+}
+```
+
+<br>
+The Freight Analysis Framework (FAF) includes regional forecasts of commodity flow value and tonnage by commodity and mode of travel. Forecasts are available in five-year increments from 2025 through 2050, as well as data for the current and recent years based upon the 2017 Commodity Flow Survey (CFS). The default forecast series are based on a mid-range macroeconomic forecast. However, forecasts for low and high economic growth scenarios are also available. A quick analysis of the three forecasts series for Oregon are included in this document. 
+```{r define_constants}
+FAF_DATABASE <- "./FAF5.3_HiLoForecasts.csv.xz"
+OREGON <- c(411, 419)
+ALL_MODES <- c("Truck", "Rail", "Water", "Air", "Multiple", "Pipeline", "Other", "None")
+ALL_TRADE_TYPES <- c("Domestic", "Import", "Export")
+```
+
+Start by creating a function that reads the FAF regional database and drops all records that do not involve travel within, to, or from Oregon. Two FAF regions covers all of Oregon: 411 (Portland) and 419 (remainder of Oregon). 
+```{r function_definition}
+process_faf_database <- function(raw, target) {
+  # Split the target into year and forecast series. If the forecast series is
+  # missing then assume it is a mid-range forecast
+  doublet <- strsplit(target, "_")[[1]]
+  year <- as.integer(doublet[1])
+  series <- ifelse(is.na(doublet[2]), "mid-range", doublet[2])
+  
+  # Extract the expanded value and tonnage for this year and series
+  suffix <- ifelse(series == "mid-range", "", paste0("_", series))
+  exp_value <- raw[[paste0("value_", year, suffix)]] * 1e6
+  exp_tons <-raw[[paste0("tons_", year, suffix)]] * 1e3
+  
+  # Save the relevant fields for our later analyses
+  keep <- raw %>%
+    mutate(year = year, series = series, mode = ALL_MODES[dms_mode],
+      direction = case_when(dms_orig %in% OREGON & dms_dest %in% OREGON ~ "Internal",
+        dms_orig %in% OREGON & !dms_dest %in% OREGON ~ "Outbound",
+        !dms_orig %in% OREGON & dms_dest %in% OREGON ~ "Inbound", TRUE ~ "External"),
+      trade_type = ALL_TRADE_TYPES[trade_type], sctg2 = as.integer(sctg2),
+      value = exp_value, tons = exp_tons) %>%
+    filter(direction != "External") %>%
+    select(year, series, sctg2, mode, value, tons, trade_type, direction)
+  return(keep)
+}
+```
+
+We only need to read the FAF regional database once, although we will run several data extractions for each year and forecast series contained in the data. 
+```{r get_faf_database}
+raw <- readr::read_csv(FAF_DATABASE, show_col_types = FALSE, guess_max = 1e6)
+eh <- colnames(raw)
+all_cases <- eh[startsWith(eh, "value")]
+all_cases <- stringr::str_replace_all(all_cases, "value_", "")
+print(paste("Year-series combinations found:", paste0(all_cases, collapse = " ")), quote = FALSE)
+```
+
+Next create a single tibble that contains data for each case, to which we'll add commodity families to keep the analyses tractable:
+```{r combine_data}
+combined <- tibble()
+for (this_case in all_cases) {
+  eh <- process_faf_database(raw, this_case)
+  combined <- bind_rows(combined, eh)
+}
+combined <- mutate(combined, sctg_group = case_when(sctg2 %in% 1:5 ~ "01-05",
+  sctg2 %in% 6:9 ~ "06-09", sctg2 %in% 10:14 ~ "10-14", sctg2 %in% 15:19 ~ "15-19",
+  sctg2 %in% 20:24 ~ "20-24", sctg2 %in% 25:30 ~ "25-30", sctg2 %in% 31:34 ~ "31-34",
+  sctg2 %in% 35:38 ~ "35-38", sctg2 %in% 39:43 ~ "39-43", TRUE ~ "99"))
+```
+
+Now we can look at total value and tonnage by direction and forecast series:
+```{r total_value_by_direction, fig.width = 7.0, fig.height = 6.5}
+meh <- combined %>%
+  filter(mode == "Truck") %>%
+  group_by(year, series, direction) %>%
+  summarise(value_billions = sum(value) / 1e9, tons_millions = sum(tons) / 1e6) %>%
+  mutate(series = factor(series, levels = c("low", "mid-range", "high")))
+ggplot(meh, aes(x = year, y = value_billions, color = series)) + 
+  geom_point() + geom_smooth(method = "loess", se = FALSE) + facet_grid(direction ~ .) +
+  labs(y = "total annual value ($ billion)", subtitle = "Oregon FAF regions only")
+ggplot(meh, aes(x = year, y = tons_millions, color = series)) + 
+  geom_point() + geom_smooth(method = "lm", se = FALSE) + 
+  facet_grid(direction ~ .) +
+  labs(y = "total annual tonnage (millions)", subtitle = "Oregon FAF regions only")
+```
+
+We can see that all three series--low, mid-range, and high--track closely together. The downturn in the economy between 2017 and 2020 is seen for flows in all three directions, but then grows at a constant rate through 2050. Interestingly, the low and mid-range forecasts appears to track closely, and only begin to significantly diverge towards the forecast horizon of 2050.
+
+We can better appreciate the implied growth rates by calculating the compound annual growth rate (CAGR) between the base year of 2017 and the 2050 forecasts for each series. In this instance we will want to calculate the CAGR for both total value and tonnage of goods moving within, into, and out of Oregon. 
+```{r define_cagr}
+calc_CAGR <- function(present_value, future_value, years) {
+  return (future_value / present_value)^((1 / years) - 1)
+}
+all_years <- unique(as.integer(substr(all_cases, 1, 4)))
+base_year <- min(all_years); forecast_horizon <- max(all_years)
+elapsed_years <- forecast_horizon - base_year
+base <- combined %>%
+  filter(year == base_year) %>%
+  group_by(direction) %>%
+  summarise(base_value = sum(value), base_tons = sum(tons))
+reshaped <- combined %>%
+  filter(year == forecast_horizon) %>%
+  group_by(series, direction) %>%
+  summarise(future_value = sum(value), future_tons = sum(tons)) %>%
+  left_join(., base, by = "direction") %>%
+  mutate(value = calc_CAGR(base_value, future_value, years), tons = calc_CAGR(base_tons, future_tons, elapsed_years),
+    series = factor(series, levels = c("low", "mid-range", "high"))) %>%
+  select(series, direction, value, tons) %>%
+  gather(metric, value, value:tons)
+ggplot(reshaped, aes(x = series, y = value, label = round(value, 3))) +
+  geom_bar(stat = "identity", size = 0.25, color = "black", fill = "azure") + 
+  geom_text(size = 3.0, vjust = -0.45) + ylim(0, max(reshaped$value) * 1.075) +
+  facet_grid(metric ~direction) + labs(y = "compound annual growth rate (CAGR)", subtitle = "Oregon FAF regions only")
+```
+
+We see that the CAGR varies by direction of flow for each foreast series, which makes selecting the correct series difficult when aligning FAF with the assumptions about economic growth embodied in the NED module. 
+
+We can be more specific, looking at the CAGR by commodity families and direction of flow. We use commodity families (`sctg_group`) in place of individual commodities to keep the analyses and visualizations sane. We're repeating the same steps as above while adding `sctg_group` as a classification variable. Moreover, in this case we will focus only tonnage, as the CT module uses that metric to generate local and long-distance truck tours.
+```{r calc_CAGR}
+base <- filter(combined, year == base_year) %>% group_by(sctg_group) %>%
+  summarise(base_tons = sum(tons))
+reshaped <- combined %>%
+  filter(year == forecast_horizon) %>%
+  group_by(sctg_group, series) %>%
+  summarise(future_tons = sum(tons)) %>%
+  right_join(base, ., by = "sctg_group") %>%
+  mutate(CAGR = calc_CAGR(base_tons, future_tons, elapsed_years),
+    series = factor(series, levels = c("low", "mid-range", "high")))
+ggplot(reshaped, aes(x = sctg_group, y = CAGR, label = round(CAGR, 4))) +
+  geom_bar(stat = "identity", width = 0.8, fill = "ivory", color = "black", size = 0.2) +
+  geom_text(size = 3.0, vjust = -0.45) + ylim(0, max(reshaped$CAGR) * 1.075) +
+  facet_grid(series ~ .) + theme(legend.position = "none") +
+  labs(y = "compound annual growth rate (CAGR) in tonnage", subtitle = "Oregon FAF regions only")
+```
+
+There are several interesting patterns in these data:
+
++ It is interesting that the growth in chemicals and pharmaceuticals (SCTG 20-24) is much higher than other families. While the _value_ of those goods might follow recent trends by increasing faster than inflation the product densities would seem to remain constant over time. The growth in tonnage shown suggests that the _volume_ of those shipments will likely increase much faster than all other commodities. 
++ Coal and coal products (SCTG 15-19) are expected to continue to grow over the next 30 years, albeit the third-slowest rate of the commodity families shown. This seems odd, in that coal-fired electricity production is the largest consumer of coal and coal products. National and global goals for clean energy would suggest that coal production and consumption would decline (i.e., a negative CAGR) rather than increasing.
++ Agriculture and fishing (SCTG 0-05) will grow at the slowest rate of all commodity families according to the FAF forecasts. The second slowest growing commodities by tonnage will be base metals and basic metal products (SCTG 31-34).
+
+The analyst might select different FAF forecast series depending upon the analyses undertaken. For example, if the effect of expanded growth in mineral products (SCTG 10-14) are being studied the FAF series that most closely matches the assumed CAGR in that industry night be selected. In other analyses the focus might be upon different commodities.
