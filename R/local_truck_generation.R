@@ -32,8 +32,7 @@
 local_truck_generation <- function(synthetic_firms, generation_probabilities,
   random_seed = 1, max_resampling_attempts = 30, max_resampling_threshold = 0.5) {
   # Announce yourself
-  message(swimctr:::self_identify(match.call()))
-
+  print(swimctr:::self_identify(match.call()), quote = FALSE)
   set.seed(as.integer(random_seed))
 
   # Reformat the generation probabilities into tall records that we can merge

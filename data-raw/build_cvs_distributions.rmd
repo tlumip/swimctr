@@ -77,18 +77,16 @@ export_intervals <- drop_triples %>%
   group_by(truck_type, payload_tons) %>%
   summarise(n = n()) %>%
   mutate(percent = percent_(n)) %>%
-  filter(percent > 0.0) %>%
   ungroup() %>%
-  rename(tons = payload_tons) %>%
   select(-n)
 ```
 
-We need to add triple combination trucks back into the mix before exporting the distributions.
-```{r add_triples}
+We need to add triple combination trucks back into the mix before exporting the distributions. We also need to reshape the tibble so that it is in the same format expected by CT.
+```{r ohplease}
 add_triples <- export_intervals %>%
-  filter(truck_type == "DBL") %>%
-  mutate(truck_type = "TPT") %>%
-  bind_rows(export_intervals, .)
+  select(payload_tons, everything()) %>%
+  spread(truck_type, percent, fill = 0.0) %>%
+  mutate(TPT = DBL)
 readr::write_csv(add_triples, "./cvs_payload_weight_distributions.csv")
 ```
 
@@ -133,11 +131,13 @@ ggplot(combined, aes(x = truck_type, y = percent, label = percent, fill = truck_
 
 We can now export the CVS truck allocation factors in the same format used previously for the FHWA factors:
 ```{r export_truck_allocations}
-reshape_taf <- taf %>%
-  separate(distance_bin, c("minimum_range", "maximum_range"), ',') %>%
-  mutate(minimum_range = as.integer(gsub("\\(", "", minimum_range)),
-    minimum_range = ifelse(minimum_range > 0, minimum_range + 1, minimum_range)) %>%
-  mutate(maximum_range = as.integer(gsub("\\]", "", maximum_range))) %>%
-  select(minimum_range, maximum_range, truck_type, percent)
-readr::write_csv(reshape_taf, "./cvs_truck_allocation_factors.csv")
+export_taf <- taf %>%
+  mutate(frequency = round(percent / 100, 4)) %>%
+  select(-n, -percent) %>%
+  spread(truck_type, frequency, fill = 0.0) %>%
+  separate(distance_bin, c("minimum_range", "maximum_range"), sep = ',') %>%
+  mutate(minimum_range = as.integer(sub('\\(', '', minimum_range)),
+    minimum_range = ifelse(minimum_range == 0, 0, minimum_range + 1),
+    maximum_range = sub('\\]', '', maximum_range))
+readr::write_csv(export_taf, "./cvs_truck_allocation_factors.csv")
 ```

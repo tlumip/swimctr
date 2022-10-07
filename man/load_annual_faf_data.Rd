@@ -4,7 +4,12 @@
 \alias{load_annual_faf_data}
 \title{Load preformatted and processed FAF data for the target year}
 \usage{
-load_annual_faf_data(preprocessed_faf, target_year, interpolate = FALSE)
+load_annual_faf_data(
+  preprocessed_faf,
+  target_year,
+  interpolate = FALSE,
+  value_deflator = 1
+)
 }
 \arguments{
 \item{preprocessed_faf}{Data frame containing the FAF inter-regional flow
@@ -17,6 +22,11 @@ modules}
 `target_year` should be interpolated between the two closest years if it is
 not one of the years included in the FAF database (defaults to FALSE,
 currently ignored)}
+
+\item{value_deflator}{An optional factor used to deflate the values in the 
+FAF, which are in constant base year dollars (2017 in FAF 5.x), to the 2009
+base year in the SWIM2 system. The default value is 1.0, which does no
+factoring.}
 }
 \description{
 Load preformatted and processed FAF data for the target year

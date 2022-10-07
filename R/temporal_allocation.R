@@ -31,7 +31,7 @@
 
 temporal_allocation <- function(daily_trips, temporal_factors) {
   # Announce yourself
-  message(swimctr:::self_identify(match.call()))
+  print(swimctr:::self_identify(match.call()), quote = FALSE)
 
   # What kind of trips am I working with? If it has foreign origin included it
   # must be a FAF inter-regional trip. Otherwise we'll assume it is a trip in a

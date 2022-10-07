@@ -15,7 +15,7 @@
 
 summarize_zonal_households <- function(zonal_data) {
   # Announce yourself
-  message(swimctr:::self_identify(match.call()))
+  print(swimctr:::self_identify(match.call()), quote = FALSE)
 
   # We might eventually save households by income range, or area type, but for
   # now just sum them into single total value

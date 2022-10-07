@@ -42,7 +42,7 @@ append_weighted_distances <- function(fhwa_db, distances,
   relevant <- filter(combined, is.na(wgt_dist),
     dms_orig %in% internal_regions | dms_dest %in% internal_regions)
   problems <- filter(relevant,
-    !(dms_orig %in% ignored_regions | dms_dest %in% ignored_regions))
+    !(dms_orig %in% ignore_regions | dms_dest %in% ignore_regions))
 
   # Now find the remaining disconnects between FAF regions within the modeled
   # area and other FAF regions within the continental USA

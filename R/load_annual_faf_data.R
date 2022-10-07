@@ -8,6 +8,10 @@
 #'   `target_year` should be interpolated between the two closest years if it is
 #'   not one of the years included in the FAF database (defaults to FALSE,
 #'   currently ignored)
+#' @param value_deflator An optional factor used to deflate the values in the 
+#'   FAF, which are in constant base year dollars (2017 in FAF 5.x), to the 2009
+#'   base year in the SWIM2 system. The default value is 1.0, which does no
+#'   factoring.
 #'
 #' @details This function retrieves FAF regional flow data for a specific year
 #'   from data already preprocessed from the original format distributed by
@@ -24,9 +28,9 @@
 
 
 load_annual_faf_data <- function(preprocessed_faf, target_year,
-  interpolate = FALSE) {
+  interpolate = FALSE, value_deflator = 1.0) {
   # Start message
-  noquote(swimctr:::self_identify(match.call()))
+  print(swimctr:::self_identify(match.call()), quote = FALSE)
   crash_signal <<- FALSE
 
   # A preprocessed FAF database will have several fields not present in the
@@ -46,17 +50,20 @@ load_annual_faf_data <- function(preprocessed_faf, target_year,
     offsets <- abs(years_found - target_year)
     faf_year <- years_found[which.min(offsets)]
     if (faf_year == target_year) {
-      noquote(paste("FAF data found for target year of", target_year))
+      print(paste("FAF data found for target year of", target_year), quote = FALSE)
     } else {
-      noquote(paste("Using data from closest FAF year", faf_year, "to target year",
-        target_year))
+      print(paste("Using data from closest FAF year", faf_year, "to target year",
+        target_year), quote = FALSE)
     }
 
-    # Now just pull data for our closest FAF year and hand it to the calling
-    # program after summarising the total flows by direction and mode
-    this_year <- filter(preprocessed_faf, faf_year == year)
-    noquote("Annual tonnage by direction and mode for modeled area:")
-    noquote(addmargins(xtabs(exp_tons ~ domestic_mode + direction, data = this_year)))
+    # Pull data for our closest FAF year and hand it to the calling program
+    # after summarising the total flows by direction and mode. We will also apply
+    # the FAF value deflator so that our summaries line up downstream.
+    this_year <- preprocessed_faf %>%
+      filter(faf_year == year) %>%
+      mutate(exp_value = exp_value * value_deflator)
+    print("Annual tonnage by direction and mode for modeled area:", quote = FALSE)
+    print(addmargins(xtabs(exp_tons ~ domestic_mode + direction, data = this_year)))
     return(this_year)
 
   } else {

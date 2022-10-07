@@ -18,7 +18,7 @@
 
 sample_daily_faf_truckloads <- function(annual_faf_trucks, target_day = 4) {
   # Announce yourself
-  message(swimctr:::self_identify(match.call()))
+  print(swimctr:::self_identify(match.call()), quote = FALSE)
 
   # First randomly assign a week of the year to each of the annual trucks, and
   # then drop for all weeks except for one. Since we are not using different

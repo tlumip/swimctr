@@ -16,8 +16,6 @@
 #' @return The function returns a string with the calling function's name and
 #'   the current date and time.
 #'
-#' @author Rick Donnelly, \email{rick.donnelly@@wsp.com}
-#'
 #' @examples
 #' print(self_identify(match.call())
 
@@ -29,4 +27,3 @@ self_identify <- function(mc) {
   }
   paste0(result, " started on ", date())
 }
-

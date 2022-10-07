@@ -36,7 +36,7 @@
 allocate_faf_to_zones <- function(daily_faf_trips, synthetic_firms, makeuse,
   intermodal_connectors, external_gateways) {
   # Announce yourself
-  message(swimctr:::self_identify(match.call()))
+  print(swimctr:::self_identify(match.call()), quote = FALSE)
 
   # A function that chooses a specific intermodal connector within a given FAF
   # region

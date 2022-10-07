@@ -31,14 +31,14 @@
 
 sample_local_truck_destinations <- function(truck_origins, skim_matrices,
   trip_length_targets, utility_parameters) {
-  message(swimctr:::self_identify(match.call()))
+  print(swimctr:::self_identify(match.call()), quote = FALSE)
   simulation_start <- proc.time()
 
   # The trip length targets are defined by truck type, and provided in wide
   # format. Convert to tall format to make subsetting easier.
   max_target_distance <- max(trip_length_targets$distance)
   targets <- trip_length_targets %>%
-    tidyr::gather(truck_type, probability, -distance) %>%
+    gather(truck_type, probability, -distance) %>%
     filter(probability > 0.0) %>%
     rename(distanceI = distance)  # To match with integer distance
 
@@ -47,7 +47,7 @@ sample_local_truck_destinations <- function(truck_origins, skim_matrices,
   # value. That is likely to be error in skim processing, for intrazonal times
   # are small even in rural areas. Thus, we will recode intrazonal distances to
   # fall within our specified range, so that at least intrazonal is an option.
-  skim_matrices <- dplyr::mutate(skim_matrices,
+  skim_matrices <- mutate(skim_matrices,
     distance = ifelse(origin == destination & distance > max_target_distance,
       max_target_distance-1, distance))
 

@@ -38,7 +38,7 @@ create_annual_truckload_equivalents <- function(faf_flows,
   truck_allocation_factors, payload_distributions, stop_frequencies = NULL,
   cache_size = 1e6, trace_flows = FALSE) {
   #---[0]--- Announce youself
-  message(swimctr:::self_identify(match.call()))
+  print(swimctr:::self_identify(match.call()), quote = FALSE)
 
   #---[1]--- Start doParallel cluster -----------------------------------------
   # Clearly we will have to parallelize this in order to obtain decent runtimes
@@ -58,7 +58,8 @@ create_annual_truckload_equivalents <- function(faf_flows,
   nonzero_flows <- filter(annual_flows, exp_tons > 0.0)
   records_dropped <- nrow(annual_flows) - nrow(nonzero_flows)
   if (records_dropped > 0) {
-    warning(paste(records_dropped, "records with zero tonnage coded dropped"))
+    print(paste(records_dropped, "records with zero tonnage coded dropped"),
+      quote = FALSE)
   }
 
   # We have challenging case where some observations are huge (14M) while most

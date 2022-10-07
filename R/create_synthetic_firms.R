@@ -18,12 +18,12 @@
 create_synthetic_firms <- function(zonal_data, sector_equivalencies,
   alpha2beta) {
   # Introduce yourself
-  message(swimctr:::self_identify(match.call()))
+  print(swimctr:::self_identify(match.call()), quote = FALSE)
   
   # Start by converting from wide to tall format, so that we have a record for
   # every alpha zone+sector pair
   nonzero <- zonal_data %>%
-    tidyr::gather("sector", "employees", -Azone, -Total) %>%
+    gather("sector", "employees", -Azone, -Total) %>%
     rename(taz = Azone) %>%
     filter(employees > 0)
 

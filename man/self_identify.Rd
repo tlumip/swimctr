@@ -31,6 +31,3 @@ This function returns a string that identifies the calling
 \examples{
 print(self_identify(match.call())
 }
-\author{
-Rick Donnelly, \email{rick.donnelly@wsp.com}
-}
