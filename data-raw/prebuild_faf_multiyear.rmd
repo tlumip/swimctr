@@ -21,7 +21,7 @@ The FAF regional database is distributed as a single comma-separated value (CSV)
 
 In both cases the Zip file normally only contains a single CSV file, named as above. The code below should read that file without modification. However, in some FAF releases an extra file was included that our code cannot handle. If this happens simply unzip the file and edit `FN` below to point to that file. Our translation process starts with reading that file, which will be read from memory several times during our translation process.
 ```{r first}
-FN <- "~/Library/Mobile Documents/com~apple~CloudDocs/Data/FAF/FAF5.3.csv.xz"
+FN <- "~/Data/FAF/faf5.4.csv.xz"
 fhwa_db <- swimctr:::load_tabular_data(FN)
 kable_(swimctr::list_tibble_contents(fhwa_db))
 ```

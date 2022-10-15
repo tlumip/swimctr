@@ -591,8 +591,8 @@ pre code {
 
 <div id="prebuild-faf-database-for-use-with-the-ct-module" class="section level2">
 <h2>Prebuild FAF database for use with the CT module</h2>
-<p><a href="mailto:rick.donnelly@gmail.com">Rick Donnelly</a> | Tue Sep
-6 15:00:13 2022</p>
+<p><a href="mailto:rick.donnelly@gmail.com">Rick Donnelly</a> | Fri Oct
+14 12:42:09 2022</p>
 <p><br> The FHWA <a href="https://ops.fhwa.dot.gov/freight/freight_analysis/faf/">Freight
 Analysis Framework</a> (FAF) is a key data product used in Oregon’s <a href="https://www.oregon.gov/odot/Planning/Pages/Technical-Tools.aspx">Statewide
 Integrated Model</a> (SWIM). Inter-regional commodity flow forecasts by
@@ -627,9 +627,9 @@ that our code cannot handle. If this happens simply unzip the file and
 edit <code>FN</code> below to point to that file. Our translation
 process starts with reading that file, which will be read from memory
 several times during our translation process.</p>
-<pre class="r"><code>FN &lt;- &quot;~/Library/Mobile Documents/com~apple~CloudDocs/Data/FAF/FAF5.3.csv.xz&quot;
+<pre class="r"><code>FN &lt;- &quot;~/Data/FAF/faf5.4.csv.xz&quot;
 fhwa_db &lt;- swimctr:::load_tabular_data(FN)</code></pre>
-<pre><code>## [1] 2398863 records with 48 fields loaded from ~/Library/Mobile Documents/com~apple~CloudDocs/Data/FAF/FAF5.3.csv.xz</code></pre>
+<pre><code>## [1] 2269421 records with 49 fields loaded from ~/Data/FAF/faf5.4.csv.xz</code></pre>
 <pre class="r"><code>kable_(swimctr::list_tibble_contents(fhwa_db))</code></pre>
 <table class="table table-condensed table-striped" style="font-size: 13px; width: auto !important; margin-left: auto; margin-right: auto;">
 <thead>
@@ -663,7 +663,7 @@ numeric
 8
 </td>
 <td style="text-align:right;">
-1440027
+1381933
 </td>
 <td style="text-align:left;">
 801, 802, 803, 804, 805, 806, 807, 808
@@ -714,7 +714,7 @@ numeric
 8
 </td>
 <td style="text-align:right;">
-1481588
+1410240
 </td>
 <td style="text-align:left;">
 801, 802, 803, 804, 805, 806, 807, 808
@@ -731,7 +731,7 @@ numeric
 7
 </td>
 <td style="text-align:right;">
-1440027
+1381933
 </td>
 <td style="text-align:left;">
 1, 2, 3, 4, 5, 6, 7
@@ -765,7 +765,7 @@ numeric
 7
 </td>
 <td style="text-align:right;">
-1481588
+1410240
 </td>
 <td style="text-align:left;">
 1, 2, 3, 4, 5, 6, 7
@@ -830,7 +830,7 @@ tons_2017
 numeric
 </td>
 <td style="text-align:right;">
-471397
+471390
 </td>
 <td style="text-align:right;">
 0
@@ -847,7 +847,7 @@ tons_2018
 numeric
 </td>
 <td style="text-align:right;">
-493576
+501917
 </td>
 <td style="text-align:right;">
 0
@@ -864,7 +864,7 @@ tons_2019
 numeric
 </td>
 <td style="text-align:right;">
-490902
+499586
 </td>
 <td style="text-align:right;">
 0
@@ -881,13 +881,13 @@ tons_2020
 numeric
 </td>
 <td style="text-align:right;">
-475625
+495214
 </td>
 <td style="text-align:right;">
 0
 </td>
 <td style="text-align:left;">
-0 – 131127.64
+0 – 116207.225694
 </td>
 </tr>
 <tr>
@@ -898,7 +898,7 @@ tons_2022
 numeric
 </td>
 <td style="text-align:right;">
-484248
+484253
 </td>
 <td style="text-align:right;">
 0
@@ -915,7 +915,7 @@ tons_2023
 numeric
 </td>
 <td style="text-align:right;">
-486401
+486394
 </td>
 <td style="text-align:right;">
 0
@@ -932,7 +932,7 @@ tons_2025
 numeric
 </td>
 <td style="text-align:right;">
-493958
+493954
 </td>
 <td style="text-align:right;">
 0
@@ -949,7 +949,7 @@ tons_2030
 numeric
 </td>
 <td style="text-align:right;">
-506301
+506293
 </td>
 <td style="text-align:right;">
 0
@@ -966,7 +966,7 @@ tons_2035
 numeric
 </td>
 <td style="text-align:right;">
-518902
+518911
 </td>
 <td style="text-align:right;">
 0
@@ -983,7 +983,7 @@ tons_2040
 numeric
 </td>
 <td style="text-align:right;">
-531866
+531856
 </td>
 <td style="text-align:right;">
 0
@@ -1000,7 +1000,7 @@ tons_2045
 numeric
 </td>
 <td style="text-align:right;">
-544828
+544831
 </td>
 <td style="text-align:right;">
 0
@@ -1017,7 +1017,7 @@ tons_2050
 numeric
 </td>
 <td style="text-align:right;">
-558343
+558324
 </td>
 <td style="text-align:right;">
 0
@@ -1051,7 +1051,7 @@ value_2018
 numeric
 </td>
 <td style="text-align:right;">
-801474
+790402
 </td>
 <td style="text-align:right;">
 0
@@ -1068,13 +1068,13 @@ value_2019
 numeric
 </td>
 <td style="text-align:right;">
-798612
+787570
 </td>
 <td style="text-align:right;">
 0
 </td>
 <td style="text-align:left;">
-0 – 59962.001618
+0 – 60243.712303
 </td>
 </tr>
 <tr>
@@ -1085,13 +1085,13 @@ value_2020
 numeric
 </td>
 <td style="text-align:right;">
-773662
+777999
 </td>
 <td style="text-align:right;">
 0
 </td>
 <td style="text-align:left;">
-0 – 54781.778912
+0 – 52946.395008
 </td>
 </tr>
 <tr>
@@ -1238,7 +1238,7 @@ current_value_2018
 numeric
 </td>
 <td style="text-align:right;">
-807126
+796102
 </td>
 <td style="text-align:right;">
 0
@@ -1255,13 +1255,30 @@ current_value_2019
 numeric
 </td>
 <td style="text-align:right;">
-806490
+794814
 </td>
 <td style="text-align:right;">
 0
 </td>
 <td style="text-align:left;">
-0 – 61153.128629
+0 – 61380.737026
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+current_value_2020
+</td>
+<td style="text-align:left;">
+numeric
+</td>
+<td style="text-align:right;">
+783710
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+0 – 53985.476003
 </td>
 </tr>
 <tr>
@@ -1272,13 +1289,13 @@ tmiles_2017
 numeric
 </td>
 <td style="text-align:right;">
-465866
+466227
 </td>
 <td style="text-align:right;">
 0
 </td>
 <td style="text-align:left;">
-0 – 46197.408914
+0 – 46197.4089
 </td>
 </tr>
 <tr>
@@ -1289,13 +1306,13 @@ tmiles_2018
 numeric
 </td>
 <td style="text-align:right;">
-473047
+482421
 </td>
 <td style="text-align:right;">
 0
 </td>
 <td style="text-align:left;">
-0 – 58122.926989
+0 – 61931.650287
 </td>
 </tr>
 <tr>
@@ -1306,13 +1323,13 @@ tmiles_2019
 numeric
 </td>
 <td style="text-align:right;">
-470917
+480279
 </td>
 <td style="text-align:right;">
 0
 </td>
 <td style="text-align:left;">
-0 – 61711.669027
+0 – 65035.959096
 </td>
 </tr>
 <tr>
@@ -1323,13 +1340,13 @@ tmiles_2020
 numeric
 </td>
 <td style="text-align:right;">
-459723
+475651
 </td>
 <td style="text-align:right;">
 0
 </td>
 <td style="text-align:left;">
-0 – 49120.961028
+0 – 67539.745135
 </td>
 </tr>
 <tr>
@@ -1340,13 +1357,13 @@ tmiles_2022
 numeric
 </td>
 <td style="text-align:right;">
-467292
+467710
 </td>
 <td style="text-align:right;">
 0
 </td>
 <td style="text-align:left;">
-0 – 49247.951601
+0 – 49247.951598
 </td>
 </tr>
 <tr>
@@ -1357,13 +1374,13 @@ tmiles_2023
 numeric
 </td>
 <td style="text-align:right;">
-469923
+470425
 </td>
 <td style="text-align:right;">
 0
 </td>
 <td style="text-align:left;">
-0 – 51076.693638
+0 – 51076.693635
 </td>
 </tr>
 <tr>
@@ -1374,13 +1391,13 @@ tmiles_2025
 numeric
 </td>
 <td style="text-align:right;">
-476853
+476900
 </td>
 <td style="text-align:right;">
 0
 </td>
 <td style="text-align:left;">
-0 – 47904.270578
+0 – 47904.270575
 </td>
 </tr>
 <tr>
@@ -1391,13 +1408,13 @@ tmiles_2030
 numeric
 </td>
 <td style="text-align:right;">
-488716
+489042
 </td>
 <td style="text-align:right;">
 0
 </td>
 <td style="text-align:left;">
-0 – 57953.603584
+0 – 57953.603581
 </td>
 </tr>
 <tr>
@@ -1408,13 +1425,13 @@ tmiles_2035
 numeric
 </td>
 <td style="text-align:right;">
-500732
+500761
 </td>
 <td style="text-align:right;">
 0
 </td>
 <td style="text-align:left;">
-0 – 63890.227618
+0 – 63890.227615
 </td>
 </tr>
 <tr>
@@ -1425,13 +1442,13 @@ tmiles_2040
 numeric
 </td>
 <td style="text-align:right;">
-513602
+513595
 </td>
 <td style="text-align:right;">
 0
 </td>
 <td style="text-align:left;">
-0 – 69816.019667
+0 – 69816.019664
 </td>
 </tr>
 <tr>
@@ -1442,13 +1459,13 @@ tmiles_2045
 numeric
 </td>
 <td style="text-align:right;">
-526491
+526884
 </td>
 <td style="text-align:right;">
 0
 </td>
 <td style="text-align:left;">
-0 – 60680.633513
+0 – 60680.63351
 </td>
 </tr>
 <tr>
@@ -1459,13 +1476,13 @@ tmiles_2050
 numeric
 </td>
 <td style="text-align:right;">
-539531
+539721
 </td>
 <td style="text-align:right;">
 0
 </td>
 <td style="text-align:left;">
-0 – 59945.952627
+0 – 61981.28035
 </td>
 </tr>
 </tbody>
@@ -1568,7 +1585,7 @@ numeric
 </tbody>
 </table>
 <pre class="r"><code>append_distances &lt;- swimctr::append_weighted_distances(fhwa_db, distances)</code></pre>
-<pre><code>## swimctr::append_weighted_distances() started on Tue Sep  6 15:01:19 2022</code></pre>
+<pre><code>## swimctr::append_weighted_distances() started on Fri Oct 14 12:43:16 2022</code></pre>
 <p>The SWIM modeled area only includes Oregon and a halo of immediately
 adjacent counties. Thus, we need to associate FAF regions outside of the
 halo with the SWIM external stations they enter and exit the halo at. We
@@ -1729,14 +1746,14 @@ for (this_year in years_found) {
     external_regions = external_regions)
   combined &lt;- bind_rows(combined, process_this_year)
 }</code></pre>
-<pre><code>## [1] swimctr::preprocess_faf_database() started on Tue Sep  6 15:01:22 2022
+<pre><code>## [1] swimctr::preprocess_faf_database() started on Fri Oct 14 12:43:20 2022
 ## [1] Years in FAF dataset: 2017 2018 2019 2020 2022 2023 2025 2030 2035 2040 2045 2050
 ## [1] FAF data found for target year of 2017
-## [1] 88370 records retained:
+## [1] 85661 records retained:
 ## 
 ##  inbound internal outbound  through 
-##    19667     2532    27952    38219 
-## [1] 26738 of 88370 records (30.3%) have zero tons and value coded
+##    19658     2170    26926    36907 
+## [1] 24029 of 85661 records (28.1%) have zero tons and value coded
 ## [1] Annual tonnage by direction and mode for modeled area:
 ##              direction
 ## domestic_mode     inbound    internal    outbound     through         Sum
@@ -1745,74 +1762,74 @@ for (this_year in years_found) {
 ##      Other        13770.0    153037.9     17126.3    100481.1    284415.3
 ##      Pipeline  23893444.8   5944564.1  17005976.8     35506.5  46879492.2
 ##      Rail      10682898.2   5943976.9   2533409.0   8548917.9  27709202.0
-##      Truck     30837334.5 150985043.5  36355661.1  20717973.3 238896012.4
+##      Truck     30837334.5 150985043.5  36355647.2  20717973.3 238895998.5
 ##      Water      1811110.0   4143218.1   1968877.9  19723524.5  27646730.5
-##      Sum       77952337.9 167684418.6  64646399.5  56787895.9 367071051.9
-## [1] swimctr::preprocess_faf_database() started on Tue Sep  6 15:02:42 2022
+##      Sum       77952337.9 167684418.6  64646385.6  56787895.9 367071038.0
+## [1] swimctr::preprocess_faf_database() started on Fri Oct 14 12:44:35 2022
 ## [1] Years in FAF dataset: 2017 2018 2019 2020 2022 2023 2025 2030 2035 2040 2045 2050
 ## [1] FAF data found for target year of 2018
-## [1] 88370 records retained:
+## [1] 85661 records retained:
 ## 
 ##  inbound internal outbound  through 
-##    19667     2532    27952    38219 
-## [1] 25201 of 88370 records (28.5%) have zero tons and value coded
+##    19658     2170    26926    36907 
+## [1] 24699 of 85661 records (28.8%) have zero tons and value coded
 ## [1] Annual tonnage by direction and mode for modeled area:
 ##              direction
 ## domestic_mode     inbound    internal    outbound     through         Sum
-##      Air          32468.4       273.2     75891.6    117830.4    226463.6
-##      Multiple  12697868.9    557183.6   6402395.3   6897339.8  26554787.6
-##      Other          238.4    300216.6      1159.3      1860.0    303474.3
-##      Pipeline  24598120.2   6309795.1  17097335.5     36247.8  48041498.6
-##      Rail      16194291.6   2039611.4   2508946.0  10555820.8  31298669.8
-##      Truck     27880854.6 160240951.8  37174087.3  20076369.9 245372263.6
-##      Water      1849958.1   5338074.0   2213742.1  18690312.1  28092086.3
-##      Sum       83253800.2 174786105.7  65473557.1  56375780.8 379889243.8
-## [1] swimctr::preprocess_faf_database() started on Tue Sep  6 15:04:01 2022
+##      Air          33387.5       273.2     74643.1    110598.9    218902.7
+##      Multiple  12530728.5    494834.7   6882052.6   6685251.6  26592867.4
+##      Other          401.7    174744.1        12.7        10.3    175168.8
+##      Pipeline  24598120.2   6133580.7  17097282.2     36229.0  47865212.1
+##      Rail      12150018.7   5401814.3   2692840.7   8570479.3  28815153.0
+##      Truck     31158460.6 156022502.9  36969726.4  20798075.5 244948765.4
+##      Water      1852476.9   3718506.1   1932488.7  18505388.9  26008860.6
+##      Sum       82323594.1 171946256.0  65649046.4  54706033.5 374624930.0
+## [1] swimctr::preprocess_faf_database() started on Fri Oct 14 12:45:50 2022
 ## [1] Years in FAF dataset: 2017 2018 2019 2020 2022 2023 2025 2030 2035 2040 2045 2050
 ## [1] FAF data found for target year of 2019
-## [1] 88370 records retained:
+## [1] 85661 records retained:
 ## 
 ##  inbound internal outbound  through 
-##    19667     2532    27952    38219 
-## [1] 24469 of 88370 records (27.7%) have zero tons and value coded
+##    19658     2170    26926    36907 
+## [1] 23959 of 85661 records (28%) have zero tons and value coded
 ## [1] Annual tonnage by direction and mode for modeled area:
 ##              direction
 ## domestic_mode     inbound    internal    outbound     through         Sum
-##      Air          33708.8       267.2     84097.7    113225.8    231299.5
-##      Multiple  13293868.8    604987.0   6372433.4   6903087.6  27174376.8
-##      Other           49.9    330736.8       383.5      4383.3    335553.5
-##      Pipeline  23519238.3   6685739.9  16657880.8     38813.0  46901672.0
-##      Rail      15154953.3   2084781.5   2431542.8   9998847.4  29670125.0
-##      Truck     27725479.4 157590073.9  36585805.9  19968637.6 241869996.8
-##      Water      1867448.6   4825850.8   2161412.2  18098476.3  26953187.9
-##      Sum       81594747.1 172122437.1  64293556.3  55125471.0 373136211.5
-## [1] swimctr::preprocess_faf_database() started on Tue Sep  6 15:05:20 2022
+##      Air          35349.1       267.4     81715.9    106310.3    223642.7
+##      Multiple  13129111.6    503908.0   6777155.4   6439026.7  26849201.7
+##      Other           57.7    173978.4        28.4        39.5    174104.0
+##      Pipeline  23519238.3   6629538.7  16657880.8     38784.1  46845441.9
+##      Rail      11498457.8   4374578.0   2414418.4   8702694.7  26990148.9
+##      Truck     30972018.6 151822523.8  35850100.2  20577843.2 239222485.8
+##      Water      1852243.8   2931003.6   1812378.6  17995383.3  24591009.3
+##      Sum       81006476.9 166435797.9  63593677.7  53860081.8 364896034.3
+## [1] swimctr::preprocess_faf_database() started on Fri Oct 14 12:47:06 2022
 ## [1] Years in FAF dataset: 2017 2018 2019 2020 2022 2023 2025 2030 2035 2040 2045 2050
 ## [1] FAF data found for target year of 2020
-## [1] 88370 records retained:
+## [1] 85661 records retained:
 ## 
 ##  inbound internal outbound  through 
-##    19667     2532    27952    38219 
-## [1] 26803 of 88370 records (30.3%) have zero tons and value coded
+##    19658     2170    26926    36907 
+## [1] 25968 of 85661 records (30.3%) have zero tons and value coded
 ## [1] Annual tonnage by direction and mode for modeled area:
 ##              direction
 ## domestic_mode     inbound    internal    outbound     through         Sum
-##      Air          29464.8       261.6     53302.5     91568.7    174597.6
-##      Multiple  10458041.3    517642.7   6599534.3   7203657.7  24778876.0
-##      Other        10490.7    155847.9     14498.6     87945.3    268782.5
-##      Pipeline  22606105.9   6676330.7  18052957.1     29731.0  47365124.7
-##      Rail       9845098.8   5361655.5   2442417.0   6724730.3  24373901.6
-##      Truck     30607469.3 151572233.2  35780016.1  19907167.0 237866885.6
-##      Water      1431277.9   4455106.0   2099989.0  22056736.6  30043109.5
-##      Sum       74987948.7 168739077.6  65042714.6  56101536.6 364871277.5
-## [1] swimctr::preprocess_faf_database() started on Tue Sep  6 15:06:38 2022
+##      Air          37178.0       239.3     98050.0    110937.5    246404.8
+##      Multiple  13385383.1    487744.1   6407998.6   6138237.0  26419362.8
+##      Other           46.8    167532.3        71.8         1.1    167652.0
+##      Pipeline  23315895.3   5915228.4  16632712.9     31594.8  45895431.4
+##      Rail      11109212.0   4723311.0   2358314.3   8348967.3  26539804.6
+##      Truck     30743312.1 143874712.4  34928250.5  20453611.2 229999886.2
+##      Water      1622410.6   3611897.8   1757774.2  17164052.5  24156135.1
+##      Sum       80213437.9 158780665.3  62183172.3  52247401.4 353424676.9
+## [1] swimctr::preprocess_faf_database() started on Fri Oct 14 12:48:21 2022
 ## [1] Years in FAF dataset: 2017 2018 2019 2020 2022 2023 2025 2030 2035 2040 2045 2050
 ## [1] FAF data found for target year of 2022
-## [1] 88370 records retained:
+## [1] 85661 records retained:
 ## 
 ##  inbound internal outbound  through 
-##    19667     2532    27952    38219 
-## [1] 26785 of 88370 records (30.3%) have zero tons and value coded
+##    19658     2170    26926    36907 
+## [1] 24076 of 85661 records (28.1%) have zero tons and value coded
 ## [1] Annual tonnage by direction and mode for modeled area:
 ##              direction
 ## domestic_mode     inbound    internal    outbound     through         Sum
@@ -1821,17 +1838,17 @@ for (this_year in years_found) {
 ##      Other        10612.3    160051.1     15086.1     97704.4    283453.9
 ##      Pipeline  24917906.4   6574666.9  18251180.5     29359.6  49773113.4
 ##      Rail      10906731.8   5060608.3   2485253.3   6927924.9  25380518.3
-##      Truck     32294422.0 156115195.1  37139485.9  20685736.3 246234839.3
+##      Truck     32294422.0 156115195.1  37139480.8  20685736.3 246234834.2
 ##      Water      1570073.2   4252865.3   2174123.7  22547209.9  30544272.1
-##      Sum       80008358.0 172715182.1  67031325.2  58004760.5 377759625.8
-## [1] swimctr::preprocess_faf_database() started on Tue Sep  6 15:07:57 2022
+##      Sum       80008358.0 172715182.1  67031320.1  58004760.5 377759620.7
+## [1] swimctr::preprocess_faf_database() started on Fri Oct 14 12:49:36 2022
 ## [1] Years in FAF dataset: 2017 2018 2019 2020 2022 2023 2025 2030 2035 2040 2045 2050
 ## [1] FAF data found for target year of 2023
-## [1] 88370 records retained:
+## [1] 85661 records retained:
 ## 
 ##  inbound internal outbound  through 
-##    19667     2532    27952    38219 
-## [1] 26785 of 88370 records (30.3%) have zero tons and value coded
+##    19658     2170    26926    36907 
+## [1] 24076 of 85661 records (28.1%) have zero tons and value coded
 ## [1] Annual tonnage by direction and mode for modeled area:
 ##              direction
 ## domestic_mode     inbound    internal    outbound     through         Sum
@@ -1840,17 +1857,17 @@ for (this_year in years_found) {
 ##      Other        10856.8    162788.6     15538.6    100321.8    289505.8
 ##      Pipeline  25462546.6   6672046.6  18891380.9     30326.7  51056300.8
 ##      Rail      11198412.8   5185997.0   2508356.8   6988989.0  25881755.6
-##      Truck     32974766.9 158854808.7  37727262.5  21081572.6 250638410.7
+##      Truck     32974766.9 158854808.7  37727257.4  21081572.6 250638405.6
 ##      Water      1587981.6   4310206.4   2201486.7  23298987.3  31398662.0
-##      Sum       81650739.1 175746892.8  68353487.9  59362647.9 385113767.7
-## [1] swimctr::preprocess_faf_database() started on Tue Sep  6 15:09:16 2022
+##      Sum       81650739.1 175746892.8  68353482.8  59362647.9 385113762.6
+## [1] swimctr::preprocess_faf_database() started on Fri Oct 14 12:50:51 2022
 ## [1] Years in FAF dataset: 2017 2018 2019 2020 2022 2023 2025 2030 2035 2040 2045 2050
 ## [1] FAF data found for target year of 2025
-## [1] 88370 records retained:
+## [1] 85661 records retained:
 ## 
 ##  inbound internal outbound  through 
-##    19667     2532    27952    38219 
-## [1] 26785 of 88370 records (30.3%) have zero tons and value coded
+##    19658     2170    26926    36907 
+## [1] 24076 of 85661 records (28.1%) have zero tons and value coded
 ## [1] Annual tonnage by direction and mode for modeled area:
 ##              direction
 ## domestic_mode     inbound    internal    outbound     through         Sum
@@ -1859,17 +1876,17 @@ for (this_year in years_found) {
 ##      Other        11396.9    166890.8     16448.7    106019.8    300756.2
 ##      Pipeline  26221985.6   7071512.4  20235651.7     31693.7  53560843.4
 ##      Rail      11786555.9   5417244.6   2585937.3   7151086.2  26940824.0
-##      Truck     34844771.0 164009622.1  38741090.8  21995106.9 259590590.8
+##      Truck     34844771.0 164009622.1  38741085.5  21995106.9 259590585.5
 ##      Water      1516568.5   4437264.1   2328118.9  21943653.2  30225604.7
-##      Sum       85558163.9 181689767.1  71138365.4  59517817.3 397904113.7
-## [1] swimctr::preprocess_faf_database() started on Tue Sep  6 15:10:35 2022
+##      Sum       85558163.9 181689767.1  71138360.1  59517817.3 397904108.4
+## [1] swimctr::preprocess_faf_database() started on Fri Oct 14 12:52:08 2022
 ## [1] Years in FAF dataset: 2017 2018 2019 2020 2022 2023 2025 2030 2035 2040 2045 2050
 ## [1] FAF data found for target year of 2030
-## [1] 88370 records retained:
+## [1] 85661 records retained:
 ## 
 ##  inbound internal outbound  through 
-##    19667     2532    27952    38219 
-## [1] 26785 of 88370 records (30.3%) have zero tons and value coded
+##    19658     2170    26926    36907 
+## [1] 24076 of 85661 records (28.1%) have zero tons and value coded
 ## [1] Annual tonnage by direction and mode for modeled area:
 ##              direction
 ## domestic_mode     inbound    internal    outbound     through         Sum
@@ -1878,17 +1895,17 @@ for (this_year in years_found) {
 ##      Other        12809.4    180413.1     18599.0    121413.8    333235.3
 ##      Pipeline  27603030.2   7647562.5  23096205.2     34596.6  58381394.5
 ##      Rail      13088660.7   5876917.1   2820887.0   7287181.2  29073646.0
-##      Truck     37738941.9 176923340.2  42031878.3  23857993.3 280552153.7
+##      Truck     37738941.9 176923340.2  42031873.2  23857993.3 280552148.6
 ##      Water      1486894.0   4682482.8   2742587.4  26515909.8  35427874.0
-##      Sum       91964257.0 195942355.8  78478485.0  66935437.0 433320534.8
-## [1] swimctr::preprocess_faf_database() started on Tue Sep  6 15:11:56 2022
+##      Sum       91964257.0 195942355.8  78478479.9  66935437.0 433320529.7
+## [1] swimctr::preprocess_faf_database() started on Fri Oct 14 12:55:22 2022
 ## [1] Years in FAF dataset: 2017 2018 2019 2020 2022 2023 2025 2030 2035 2040 2045 2050
 ## [1] FAF data found for target year of 2035
-## [1] 88370 records retained:
+## [1] 85661 records retained:
 ## 
 ##  inbound internal outbound  through 
-##    19667     2532    27952    38219 
-## [1] 26782 of 88370 records (30.3%) have zero tons and value coded
+##    19658     2170    26926    36907 
+## [1] 24073 of 85661 records (28.1%) have zero tons and value coded
 ## [1] Annual tonnage by direction and mode for modeled area:
 ##              direction
 ## domestic_mode     inbound    internal    outbound     through         Sum
@@ -1897,17 +1914,17 @@ for (this_year in years_found) {
 ##      Other        14250.6    187058.5     20965.3    137372.3    359646.7
 ##      Pipeline  28530654.2   8400748.5  25878897.3     36344.1  62846644.1
 ##      Rail      14634701.1   6357282.4   3120006.7   7456750.9  31568741.1
-##      Truck     40841533.9 191110815.1  45858963.2  25979043.2 303790355.4
+##      Truck     40841533.9 191110815.1  45858958.1  25979043.2 303790350.3
 ##      Water      1412831.9   4968998.6   3011844.0  29253957.7  38647632.2
-##      Sum       98472321.5 211713583.6  86360134.5  72942057.4 469488097.0
-## [1] swimctr::preprocess_faf_database() started on Tue Sep  6 15:13:18 2022
+##      Sum       98472321.5 211713583.6  86360129.4  72942057.4 469488091.9
+## [1] swimctr::preprocess_faf_database() started on Fri Oct 14 12:56:39 2022
 ## [1] Years in FAF dataset: 2017 2018 2019 2020 2022 2023 2025 2030 2035 2040 2045 2050
 ## [1] FAF data found for target year of 2040
-## [1] 88370 records retained:
+## [1] 85661 records retained:
 ## 
 ##  inbound internal outbound  through 
-##    19667     2532    27952    38219 
-## [1] 26782 of 88370 records (30.3%) have zero tons and value coded
+##    19658     2170    26926    36907 
+## [1] 24073 of 85661 records (28.1%) have zero tons and value coded
 ## [1] Annual tonnage by direction and mode for modeled area:
 ##              direction
 ## domestic_mode     inbound    internal    outbound     through         Sum
@@ -1916,17 +1933,17 @@ for (this_year in years_found) {
 ##      Other        15905.5    198835.5     23673.6    156292.7    394707.3
 ##      Pipeline  29476018.4   9284046.9  28901730.7     37935.9  67699731.9
 ##      Rail      16557648.3   6906662.5   3464862.0   7843402.3  34772575.1
-##      Truck     44379849.4 207718320.3  50490733.4  28403804.0 330992707.1
+##      Truck     44379849.4 207718320.3  50490728.6  28403804.0 330992702.3
 ##      Water      1343018.6   5305266.5   3398140.9  31996378.0  42042804.0
-##      Sum      105993231.1 230166772.5  95616800.6  79599375.0 511376179.2
-## [1] swimctr::preprocess_faf_database() started on Tue Sep  6 15:14:40 2022
+##      Sum      105993231.1 230166772.5  95616795.8  79599375.0 511376174.4
+## [1] swimctr::preprocess_faf_database() started on Fri Oct 14 12:57:56 2022
 ## [1] Years in FAF dataset: 2017 2018 2019 2020 2022 2023 2025 2030 2035 2040 2045 2050
 ## [1] FAF data found for target year of 2045
-## [1] 88370 records retained:
+## [1] 85661 records retained:
 ## 
 ##  inbound internal outbound  through 
-##    19667     2532    27952    38219 
-## [1] 26780 of 88370 records (30.3%) have zero tons and value coded
+##    19658     2170    26926    36907 
+## [1] 24071 of 85661 records (28.1%) have zero tons and value coded
 ## [1] Annual tonnage by direction and mode for modeled area:
 ##              direction
 ## domestic_mode     inbound    internal    outbound     through         Sum
@@ -1935,17 +1952,17 @@ for (this_year in years_found) {
 ##      Other        17810.4    219288.1     26887.9    178735.1    442721.5
 ##      Pipeline  30588948.9  10365881.1  32511217.9     40247.3  73506295.2
 ##      Rail      18925402.9   7544128.1   3847930.6   8377099.9  38694561.5
-##      Truck     48513022.8 224864649.0  56074866.9  31218765.7 360671304.4
+##      Truck     48513022.8 224864649.0  56074862.2  31218765.7 360671299.7
 ##      Water      1276305.1   5694810.8   3825021.2  27952123.4  38748260.5
-##      Sum      115038180.1 249513861.5 106562341.0  80165262.5 551279645.1
-## [1] swimctr::preprocess_faf_database() started on Tue Sep  6 15:16:01 2022
+##      Sum      115038180.1 249513861.5 106562336.3  80165262.5 551279640.4
+## [1] swimctr::preprocess_faf_database() started on Fri Oct 14 12:59:13 2022
 ## [1] Years in FAF dataset: 2017 2018 2019 2020 2022 2023 2025 2030 2035 2040 2045 2050
 ## [1] FAF data found for target year of 2050
-## [1] 88370 records retained:
+## [1] 85661 records retained:
 ## 
 ##  inbound internal outbound  through 
-##    19667     2532    27952    38219 
-## [1] 26779 of 88370 records (30.3%) have zero tons and value coded
+##    19658     2170    26926    36907 
+## [1] 24070 of 85661 records (28.1%) have zero tons and value coded
 ## [1] Annual tonnage by direction and mode for modeled area:
 ##              direction
 ## domestic_mode     inbound    internal    outbound     through         Sum
@@ -1954,9 +1971,9 @@ for (this_year in years_found) {
 ##      Other        20008.9    242429.6     30156.6    205334.3    497929.4
 ##      Pipeline  31743440.6  11486770.6  36943847.0     42656.7  80216714.9
 ##      Rail      21907983.7   8262689.9   4264384.1   9081449.2  43516506.9
-##      Truck     53151218.8 241744624.8  61925718.0  34330452.9 391152014.5
+##      Truck     53151218.8 241744624.8  61925713.4  34330452.9 391152009.9
 ##      Water      1239609.3   6138321.7   4333133.6  25284969.6  36996034.2
-##      Sum      125385608.8 268782383.2 118747002.0  82695444.8 595610438.8</code></pre>
+##      Sum      125385608.8 268782383.2 118746997.4  82695444.8 595610434.2</code></pre>
 <p>Finally, we will write the combined dataset to both <a href="https://www.rstudio.com/blog/feather/">feather</a> and CSV text
 files. Feather is very fast binary file format that loads quicker than
 native R binary files but at the cost of storing the data in
@@ -1967,7 +1984,7 @@ function used in CT.</p>
 <pre class="r"><code>feather::write_feather(combined, &quot;./prebuild_faf_multiyear.feather&quot;)
 readr::write_csv(combined, &quot;./prebuild_faf_multiyear.csv&quot;)</code></pre>
 <p>The files are now ready for use by the CT modules. The output files
-contain 1060440 records and the following fields:</p>
+contain 1027932 records and the following fields:</p>
 <pre class="r"><code>kable_(swimctr::list_tibble_contents(combined))</code></pre>
 <table class="table table-condensed table-striped" style="font-size: 13px; width: auto !important; margin-left: auto; margin-right: auto;">
 <thead>
@@ -2018,7 +2035,7 @@ integer
 8
 </td>
 <td style="text-align:right;">
-628740
+622080
 </td>
 <td style="text-align:left;">
 801, 802, 803, 804, 805, 806, 807, 808
@@ -2069,7 +2086,7 @@ integer
 8
 </td>
 <td style="text-align:right;">
-702504
+676656
 </td>
 <td style="text-align:left;">
 801, 802, 803, 804, 805, 806, 807, 808
@@ -2086,7 +2103,7 @@ numeric
 6
 </td>
 <td style="text-align:right;">
-628740
+622080
 </td>
 <td style="text-align:left;">
 1, 2, 3, 4, 5, 7
@@ -2120,7 +2137,7 @@ numeric
 7
 </td>
 <td style="text-align:right;">
-702504
+676656
 </td>
 <td style="text-align:left;">
 1, 2, 3, 4, 5, 6, 7
@@ -2168,7 +2185,7 @@ exp_tons
 numeric
 </td>
 <td style="text-align:right;">
-257228
+259335
 </td>
 <td style="text-align:right;">
 0
@@ -2185,7 +2202,7 @@ exp_value
 numeric
 </td>
 <td style="text-align:right;">
-410783
+410706
 </td>
 <td style="text-align:right;">
 0
@@ -2202,10 +2219,10 @@ exp_tmiles
 numeric
 </td>
 <td style="text-align:right;">
-435573
+438154
 </td>
 <td style="text-align:right;">
-5292
+5796
 </td>
 <td style="text-align:left;">
 0 – 59591769774
@@ -2239,7 +2256,7 @@ character
 7
 </td>
 <td style="text-align:right;">
-601812
+585048
 </td>
 <td style="text-align:left;">
 I5N, I5S, I82N, I84E, OR39S, US95S, US97S
@@ -2256,7 +2273,7 @@ character
 7
 </td>
 <td style="text-align:right;">
-601812
+585048
 </td>
 <td style="text-align:left;">
 I5N, I5S, I82N, I84E, OR39S, US95S, US97S
@@ -2290,7 +2307,7 @@ numeric
 628
 </td>
 <td style="text-align:right;">
-5292
+5796
 </td>
 <td style="text-align:left;">
 23 – 3492
