@@ -8,7 +8,8 @@ load_annual_faf_data(
   preprocessed_faf,
   target_year,
   interpolate = FALSE,
-  value_deflator = 1
+  value_deflator = 1,
+  sample_multiple_modes = NULL
 )
 }
 \arguments{
@@ -27,6 +28,12 @@ currently ignored)}
 FAF, which are in constant base year dollars (2017 in FAF 5.x), to the 2009
 base year in the SWIM2 system. The default value is 1.0, which does no
 factoring.}
+
+\item{sample_multiple_modes}{An optional factor used to randomly select trips
+by multiple modes as truck trips, expressed as faction of the total 
+multiple mode trips. For example, `sample_multiple_modes = 0.01` would add
+about 1 percent of the multiple mode trips to the truck modes. The default
+value is NULL, which indicates that no multiple mode trips will be added.}
 }
 \description{
 Load preformatted and processed FAF data for the target year

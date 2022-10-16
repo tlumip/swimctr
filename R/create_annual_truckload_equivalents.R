@@ -37,7 +37,7 @@
 create_annual_truckload_equivalents <- function(faf_flows,
   truck_allocation_factors, payload_distributions, stop_frequencies = NULL,
   cache_size = 1e6, trace_flows = FALSE) {
-  #---[0]--- Announce youself
+  #---[0]--- Announce yourself
   print(swimctr:::self_identify(match.call()), quote = FALSE)
 
   #---[1]--- Start doParallel cluster -----------------------------------------
@@ -50,13 +50,10 @@ create_annual_truckload_equivalents <- function(faf_flows,
   simulation_start <- proc.time()
 
   #---[2]--- Check and process commodity flow data ----------------------------
-  # Keep only records where truck is the domestic mode of shipping
-  annual_flows <- filter(faf_flows, dms_mode %in% c(1))
-
-  # But for now drop records with zero expanded tons, as they'll cause problems
-  # later. Report the number of such problem trucks if found.
-  nonzero_flows <- filter(annual_flows, exp_tons > 0.0)
-  records_dropped <- nrow(annual_flows) - nrow(nonzero_flows)
+  # Drop records with zero expanded tons, as they'll cause problems later.
+  # Report the number of such problem trucks if found.
+  nonzero_flows <- filter(faf_flows, exp_tons > 0.0)
+  records_dropped <- nrow(faf_flows) - nrow(nonzero_flows)
   if (records_dropped > 0) {
     print(paste(records_dropped, "records with zero tonnage coded dropped"),
       quote = FALSE)
