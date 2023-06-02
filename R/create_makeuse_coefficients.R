@@ -41,10 +41,9 @@ create_makeuse_coefficients <- function(pecas_makeuse,
   all_commodities <- sort(unique(all_commodities))  # In case of duplicates
 
   # Start by processing the make coefficients
-  make <- pecas_makeuse %>%
-    filter(MorU == "M") %>%
+  make <- dplyr::filter(pecas_makeuse, MorU == "M") %>%
 
-    # Remove non-transportable commodites, and extract two-digit SCTG from those
+    # Remove non-transportable commodities, and extract two-digit SCTG from those
     # that remain
     mutate(prefix = tolower(substr(Commodity, 1, 4)),
       sctg2 = ifelse(prefix == "sctg", substr(Commodity, 5, 6), NA)) %>%

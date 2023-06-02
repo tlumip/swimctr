@@ -131,7 +131,7 @@ create_annual_truckload_equivalents <- function(faf_flows,
     # Report the results if requested and exit stage left. By including this
     # within the function the output will go to the doParallel logfile defined
     # at the start of this program rather than cluttering the screen.
-    if (flow_trace == TRUE) {
+    if (trace_flows == TRUE) {
       print(paste0("band=", distance_band, " flowID=", this_flow$flowID,
         ": wgt_dist=", this_flow$distance, " scaled_tons=",
         round(this_flow$scaled_tons, 1), " trucks=", nrow(combined),
