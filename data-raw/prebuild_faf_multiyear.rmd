@@ -21,15 +21,15 @@ The FAF regional database is distributed as a single comma-separated value (CSV)
 
 In both cases the Zip file normally only contains a single CSV file, named as above. The code below should read that file without modification. However, in some FAF releases an extra file was included that our code cannot handle. If this happens simply unzip the file and edit `FN` below to point to that file. Our translation process starts with reading that file, which will be read from memory several times during our translation process.
 ```{r first}
-FN <- "~/Data/FAF/faf5.4.csv.xz"
-fhwa_db <- swimctr:::load_tabular_data(FN)
+target <- "~/Library/Mobile Documents/com~apple~CloudDocs/Data/FAF/FAF5.4.csv.xz"
+fhwa_db <- readr::read_csv(target, guess_max = 1e6, show_col_types = FALSE)
 kable_(swimctr::list_tibble_contents(fhwa_db))
 ```
 
 We next define the FAF regions included within the SWIM modeled area. We also define FAF regions that cannot be reached by surface transport modes. The only domestic FAF regions falling into that category are in Hawaii. 
 ```{r second}
-ignored_regions <- c(151, 159)   # Honolulu, rest of Hawaii
-internal_regions <- c(411, 419)   # Portland, rest of Oregon
+IGNORED_REGIONS <- c(151, 159)   # Honolulu, rest of Hawaii
+SWIM_FAF_REGIONS <- c(411, 419, 532)  # Portland, rest of Oregon, Vancouver
 ```
 
 In FAF Version 4 the weighted distance for each transaction (record) in the data were provided. The distances were from the origin point to destination point from the source data (typically the 2017 [Commodity Flow Survey](https://www.census.gov/programs-surveys/cfs.html)). Since there were typically several flow records in the source data a tonnage-weighted distance was calculated for each FAF region interchange. This allowed us to report the full vehicle miles of travel for truck trips entering and leaving Oregon rather than just their mileage on the SWIM network. These weighted distances were inexplicably replaced by far less useful wide distance bands in FAF Version 5. We have separately compiled a database of FAF 4.5.1 weighted distances (`wgt_dist`) that we must append to the FAF 5 and later data to regain the same distance precision. In this step we read the data needed to do so.
@@ -60,7 +60,7 @@ options(scipen = 999)  # Suppresses scientific notion in summaries
 combined <- tibble()
 for (this_year in years_found) {
   process_this_year <- swimctr::preprocess_faf_database(append_distances,
-    target_year = this_year, internal_regions = internal_regions,
+    target_year = this_year, internal_regions = SWIM_FAF_REGIONS,
     external_regions = external_regions)
   combined <- bind_rows(combined, process_this_year)
 }
