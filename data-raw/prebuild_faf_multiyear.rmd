@@ -21,7 +21,7 @@ The FAF regional database is distributed as a single comma-separated value (CSV)
 
 In both cases the Zip file normally only contains a single CSV file, named as above. The code below should read that file without modification. However, in some FAF releases an extra file was included that our code cannot handle. If this happens simply unzip the file and edit `FN` below to point to that file. Our translation process starts with reading that file, which will be read from memory several times during our translation process.
 ```{r first}
-target <- "~/Library/Mobile Documents/com~apple~CloudDocs/Data/FAF/FAF5.4.csv.xz"
+target <- "~/Desktop/FAF5.4.csv.xz"
 fhwa_db <- readr::read_csv(target, guess_max = 1e6, show_col_types = FALSE)
 kable_(swimctr::list_tibble_contents(fhwa_db))
 ```
@@ -40,10 +40,10 @@ kable_(swimctr::list_tibble_contents(distances))
 append_distances <- swimctr::append_weighted_distances(fhwa_db, distances)
 ```
 
-The SWIM modeled area only includes Oregon and a halo of immediately adjacent counties. Thus, we need to associate FAF regions outside of the halo with the SWIM external stations they enter and exit the halo at. We used Google Maps to identify the shortest path between the largest city in each FAF region outside of Oregon and Salem. The latter is thought to represent the geographic center of the Portland-Eugene corridor, in which most economic activity is concentrated. The same process was used for flows through Oregon (e.g., from FAF regions in Washington to California). In this step we read these previously defined data. 
+The SWIM modeled area only includes Oregon and a halo of immediately adjacent counties. The flows to and from Oregon from regions outside of the SWIM halo will unambiguously be extracted from the FAF regional database by virtue of one or both trip ends being within the halo. However, through trips must be explicitly defined. The `faf_through_equivalencies` file lists one or more routes for flows that might pass through Oregon. Those competing routes that don't pass through the halo have zeroes coded as entry and exit points. We can ignore those for now, as there will always be competing routes that do go through Oregon coded in this file. 
 ```{r four}
-FN <- "~/Models/swimctr/data-raw/ct_external_regions.csv"
-external_regions <- swimctr:::load_tabular_data(FN)
+FN <- "~/Models/swimctr/data-raw/faf_through_equivalencies.csv"
+external_regions <- swimctr:::load_tabular_data(FN) %>% filter(entry > 0, exit > 0)
 kable_(swimctr::list_tibble_contents(external_regions))
 ```
 
