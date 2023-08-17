@@ -34,10 +34,15 @@
 #'   makeuse, intermodal_connectors, external_gateways)
 
 allocate_faf_to_zones <- function(daily_faf_trips, synthetic_firms, makeuse,
-  intermodal_connectors, external_gateways) {
+  intermodal_connectors, swim_external_zones = 5001:5012) {
   # Announce yourself
   print(swimctr:::self_identify(match.call()), quote = FALSE)
-
+  
+  # Define the list of modes included in the intermodal connectors tibble. We
+  # assume that an alpha zone (`taz`) is defined for each of these included
+  # modes within each FAF region within the SWIM modeled area
+  all_intermodal_modes <- sort(unique(intermodal_connectors$mode))
+  
   # A function that chooses a specific intermodal connector within a given FAF
   # region
   choose_intermodal_connector <- function(this_region, this_mode) {
@@ -56,20 +61,9 @@ allocate_faf_to_zones <- function(daily_faf_trips, synthetic_firms, makeuse,
       choice <- as.integer(available$taz)
     } else {
       # Choose from between multiple connectors based upon user-defined weights
-      choice <- sample(available$taz, 1, prob = available$weight)
+      choice <- sample(available$taz, size = 1, prob = available$weight)
     }
     return(choice)
-  }
-
-  # We will also need a function that returns the external gateway associated
-  # with a FAF region external to the model
-  get_external_gateway <- function(external_region) {
-    # Get the list of external stations associated with this external region
-    this_gateway <- filter(external_gateways, faf_region == external_region)
-    if (nrow(this_gateway) == 0) {
-      stop(paste("External gateway not defined for FAF region", external_region))
-    }
-    return(this_gateway$external_station)
   }
 
   # We need to determine which FAF regions are within the modeled area. We can
@@ -77,7 +71,7 @@ allocate_faf_to_zones <- function(daily_faf_trips, synthetic_firms, makeuse,
   internal_regions <- sort(unique(synthetic_firms$faf_region))
 
   # Create a list of the unique sectors found in the synthetic firms
-  all_sectors <- sort(unique(synthetic_firms$sector))
+  all_categories <- sort(unique(synthetic_firms$category))
 
   # It will be considerably easier to simply return the list of origin and
   # destination zones, which we can merge with the original trip origins. We
@@ -90,32 +84,27 @@ allocate_faf_to_zones <- function(daily_faf_trips, synthetic_firms, makeuse,
   # both foreign and domestic modes we don't need to worry about connections.
   all_faf_modes <- c("Truck", "Rail", "Water", "Air", "Multiple", "Pipeline",
     "Other", "None")
-  if (class(daily_faf_trips$fr_inmode) == "numeric") {
-    # Convert the codes from integer to descriptive labels
-    daily_faf_trips$fr_inmode <- all_faf_modes[daily_faf_trips$fr_inmode]
-    daily_faf_trips$fr_outmode <- all_faf_modes[daily_faf_trips$fr_outmode]
-  }
-  # We only define marine and air terminals, so set other modes to missing
-  daily_faf_trips <- mutate(daily_faf_trips,
-  	fr_inmode = ifelse(!fr_inmode %in% c(3, 4), NA, fr_inmode),
-  	fr_outmode = ifelse(!fr_outmode %in% c(3, 4), NA, fr_outmode))
+  add_foreign_modes <- mutate(daily_faf_trips,
+    foreign_inmode = all_faf_modes[as.integer(fr_inmode)],
+    foreign_outmode = all_faf_modes[as.integer(fr_outmode)])
 
   # Define a function to recode the originating and terminating FAF regions to
   # traffic analysis zones. This is where most of the processing will take
-  # place, but we need to encapsulate it so that we can parallelize it.
+  # place.
   choose_zones <- function(replicant, i) {
     # How we code the origin and destination zone will depend upon whether it is
     # internal to the modeled area, outside of it, or connecting to different
     # mode of transport. Start by processing the originating FAF region
-    if (!replicant$dms_orig %in% internal_regions) {
-      # It doesn't matter whether it is bound for intermodal or not if it is
-      # outside of the modeled area
-      ozone <- get_external_gateway(replicant$dms_orig)
+    if (replicant$dms_orig %in% swim_external_zones) {
+      # If the origin is an external station we don't care whether it went 
+      # through intermodal connector before getting there
+      ozone <- replicant$dms_orig
     } else {
       # If the foreign inbound mode is defined then bring it into the modeled
       # area through a connector appropriate for it.
-      if (!is.na(replicant$fr_inmode)) {
-        ozone <- choose_intermodal_connector(replicant$dms_orig, replicant$fr_inmode)
+      if (replicant$foreign_inmode %in% all_intermodal_modes) {
+        ozone <- choose_intermodal_connector(replicant$dms_orig,
+          replicant$foreign_inmode)
       } else {
         # Choose an internal zone within this FAF region. However, not all firms
         # are equally likely. We'll use make coefficients to scale employment in
@@ -125,42 +114,44 @@ allocate_faf_to_zones <- function(daily_faf_trips, synthetic_firms, makeuse,
           # If there are no make coefficients defined by AA for the current
           # commodity then we just have to assume that all firms are equally
           # likely to produce it.
-          make_coefficients <- tibble(sector = all_sectors, coefficient = 1.0)
+          make_coefficients <- tibble(category = all_categories, coefficient = 1.0)
         }
+        # Sample from the eligible firms within the origin FAF region
         eligible_firms <- synthetic_firms %>%
           filter(faf_region == replicant$dms_orig) %>%
-          left_join(make_coefficients, by = "sector") %>%
+          left_join(make_coefficients, by = "category") %>%
           filter(!is.na(coefficient)) %>%   # Remove irrelevant firms
           mutate(zed = employees * coefficient)
-        ozone <- sample(eligible_firms$taz, size = 1, prob = eligible_firms$zed)
+        ozone <- sample(eligible_firms$Azone, size = 1, prob = eligible_firms$zed)
       }
     }
 
     # Now we carry out the same tortured process for choosing the destination
     # zone, except that use coefficients are used instead
-    if (!replicant$dms_dest %in% internal_regions) {
-      # Choose the external gateway that corresponds to the external FAF region
-      dzone <- get_external_gateway(replicant$dms_dest)
+    if (replicant$dms_dest %in% swim_external_zones) {
+      # We don't care where the trip goes once it leaves the SWIM modeled area
+      dzone <- replicant$dms_dest
     } else {
       # If foreign export mode is chosen then associate it with an appropriate
       # intermodal connector from within the internal region
-      if (!is.na(replicant$fr_outmode)) {
-        dzone <- choose_intermodal_connector(replicant$dms_dest, replicant$fr_outmode)
+      if (replicant$foreign_outmode %in% all_intermodal_modes) {
+        dzone <- choose_intermodal_connector(replicant$dms_dest,
+          replicant$foreign_outmode)
       } else {
-        # Choose from firms within the internal FAF region
+        # Choose from firms within the internal destination FAF region
         use_coefficients <- filter(makeuse, MorU == "U", sctg2 == replicant$sctg2)
         if (nrow(use_coefficients) == 0) {
           # If use coefficients are not defined for this SCTG then create
           # bogus coefficients that are same for all industries (in effect
           # eliminating influence of use coefficient)
-          use_coefficients <- tibble(sector = all_sectors, coefficient = 1.0)
+          use_coefficients <- tibble(category = all_categories, coefficient = 1.0)
         }
         eligible_firms <- synthetic_firms %>%
           filter(faf_region == replicant$dms_dest) %>%
-          left_join(use_coefficients, by = "sector") %>%
+          left_join(use_coefficients, by = "category") %>%
           filter(!is.na(coefficient)) %>%
           mutate(zed = employees * coefficient)
-        dzone <- sample(eligible_firms$taz, size = 1, prob = eligible_firms$zed)
+        dzone <- sample(eligible_firms$Azone, size = 1, prob = eligible_firms$zed)
       }
     }
 
@@ -174,16 +165,16 @@ allocate_faf_to_zones <- function(daily_faf_trips, synthetic_firms, makeuse,
   myCluster <- parallel::makeCluster(parallel::detectCores(),
     outfile = RTP[["ct.cluster.logfile"]])
   doParallel::registerDoParallel(myCluster)
-  print(paste("doParallel cluster instance started with", getDoParWorkers(),
-    "cores"), quote = FALSE)  
+  print(paste("doParallel cluster instance started with", 
+    foreach::getDoParWorkers(), "cores"), quote = FALSE)  
   simulation_start <- proc.time()
-  results <- foreach(i = 1:nrow(daily_faf_trips), .packages = c("dplyr")) %dopar%
-    choose_zones(daily_faf_trips[i,], i)
+  results <- foreach(i = 1:nrow(add_foreign_modes), .packages = c("dplyr")) %dopar%
+    choose_zones(add_foreign_modes[i,], i)
   assigned_zones <- bind_rows(results)
 
   # We need to merge the origin and destination zones with the corresponding
   # daily FAF trip records
-  final <- left_join(daily_faf_trips, assigned_zones, by = "sequence")
+  final <- left_join(add_foreign_modes, assigned_zones, by = "sequence")
   final$sequence <- NULL  # No longer required
   stopCluster(myCluster)
   simulation_stop <- proc.time()
@@ -195,18 +186,17 @@ allocate_faf_to_zones <- function(daily_faf_trips, synthetic_firms, makeuse,
     group_by(direction) %>%
     summarise(trips = n(), value = sum(value), tons = sum(tons)) %>%
     mutate(pct_trips = swimctr:::percent(trips))
-
-  # Check to see what percent are intrazonal
-  n_intrazonals <- nrow(filter(final, origin == destination))
-  if (n_intrazonals > 0) {
-  	pct_intrazonals <- swimctr::percent(n_intrazonals, nrow(final))
-  	print(paste(pct_intrazonals, "percent of trips are intrazonal"),
-  	  quote = FALSE)
-  }
-
-  # Finish up and out
   print(paste(nrow(final), "daily trips allocated to alpha zones:"),
     quote = FALSE)
-  print(as.data.frame(s1))  # as.data.frame improves appearance in logfile
+  print(as.data.frame(s1))
+
+  # Report the percent of trips that are intrazonal
+  n_intrazonals <- nrow(filter(final, origin == destination))
+  if (n_intrazonals > 0) {
+    pct_intrazonals <- swimctr::percent(n_intrazonals, nrow(final))
+    print(paste(pct_intrazonals, "percent of trips are intrazonal"),
+      quote = FALSE)
+  }
+
   return(final)
 }

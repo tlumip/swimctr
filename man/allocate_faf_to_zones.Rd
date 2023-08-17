@@ -9,7 +9,7 @@ allocate_faf_to_zones(
   synthetic_firms,
   makeuse,
   intermodal_connectors,
-  external_gateways
+  swim_external_zones = 5001:5012
 )
 }
 \arguments{

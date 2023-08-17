@@ -37,7 +37,7 @@ load_tabular_data <- function(data_object, sep = ',', comment = '#',
   else if (data_class == "character") {
     if (file.exists(data_object)) {
       data_object <- readr::read_delim(data_object, guess_max = 1e6, delim = sep,
-        comment = comment, show_col_types = FALSE)
+        comment = comment, show_col_types = FALSE, trim_ws = TRUE)
       print(paste(nrow(data_object), "records with",
         length(colnames(data_object)), "fields loaded from", data_identifier),
         quote = FALSE)
@@ -46,7 +46,7 @@ load_tabular_data <- function(data_object, sep = ',', comment = '#',
       crash_signal <<- TRUE
     }
   }
-  # Otherwise it is some type of data object other than a table or file with
+  # Otherwise it is some type of data object other than a tibble or file with
   # those contents
   else {
     error_msg <- paste0("Unable to process ", data_object, ": unknown class ",

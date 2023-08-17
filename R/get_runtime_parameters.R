@@ -89,8 +89,8 @@ get_runtime_parameters <- function(properties_FN, file_format = "simple",
   params <- params %>%
     mutate(status = case_when(
       token %in% c("root.dir", "repo.dir", "alpha2beta.file", "base.year",
-        "scenario.outputs", "pecas.makeuse", "pecas.zonal.employment",
-        "highway.assign.previous.skim.path") ~ status,
+        "current.year", "scenario.outputs", "pecas.makeuse",
+        "pecas.zonal.employment", "highway.assign.previous.skim.path") ~ status,
       substr(token, 1, 3) == "ct." ~ status,
       substr(token, 1, 4) == "cvs." ~ status,
       substr(token, 1, 4) == "faf." ~ status, TRUE ~ "drop")) %>%
@@ -126,7 +126,7 @@ get_runtime_parameters <- function(properties_FN, file_format = "simple",
   # We will return a list of the contents that the user can print in the run
   # log, as the log file might not yet exist when one or more runtime properties
   # files are first read
-  results <- c(paste0("Runtime parameters reads from ", properties_FN, ':'),
+  results <- c(paste0("Runtime parameters read from ", properties_FN, ':'),
     params$outcome)
-  return(results)
+  print(results, quote = FALSE)
 }

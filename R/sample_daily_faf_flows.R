@@ -28,14 +28,13 @@ sample_daily_faf_flows <- function(annual_faf_flows, external_targets,
 
   # Define local helper functions
   decrement_ <- function(x) { eval.parent(substitute(x <- x - 1)) }
-  percent_ <- function(x, y = sum(x), places = 2) round((x / y) * 100, places)
 
   # Load the annual FAF flows if they are not supplied as a tibble
-  #annual_faf_flows <- swimctr::load_data(annual_faf_flows)
+  annual_faf_flows <- swimctr:::load_tabular_data(annual_faf_flows)
 
   # Load the target external truck flows if not supplied as a tibble and build
   # a list of the included external zone numbers
-  #external_targets <- swimctr::load_data(external_targets)
+  external_targets <- swimctr:::load_tabular_data(external_targets)
   all_external_stations <- sort(unique(external_targets$external_sta))
 
   # Summarise the external flows by direction to obtain the percentage accounted
@@ -82,8 +81,8 @@ sample_daily_faf_flows <- function(annual_faf_flows, external_targets,
   # destinations outside of it.
   for (this_external_exit in all_external_stations) {
     # Extract the internal-external flows associated with this external station
-    revised_subset <- filter(revised, dms_orig %in% internal_faf_regions,
-      dms_dest == this_external_exit)
+    revised_subset <- filter(annual_faf_flows,
+      dms_orig %in% internal_faf_regions, dms_dest == this_external_exit)
     N_subset <- nrow(revised_subset)
     if (N_subset < 1) next  # Not all possible interchanges are present in FAF
 
@@ -102,7 +101,7 @@ sample_daily_faf_flows <- function(annual_faf_flows, external_targets,
   # zones and destinations within the SWIM halo
   for (this_external_entry in all_external_stations) {
     # Grab the external-internal flows entering through this external station
-    revised_subset <- filter(revised, dms_orig == this_external_entry,
+    revised_subset <- filter(annual_faf_flows, dms_orig == this_external_entry,
       dms_dest %in% internal_faf_regions)
     N_subset <- nrow(revised_subset)
     if (N_subset < 1) next  # This interchange not found in the FAF data
@@ -129,15 +128,16 @@ sample_daily_faf_flows <- function(annual_faf_flows, external_targets,
   # Summarise the results
   annual_sum <- group_by(annual_faf_flows, direction) %>%
     summarise(annual = n()) %>%
-    mutate(annual_pct = percent_(annual))
+    mutate(annual_pct = swimctr::percent(annual))
   sampled_sum <- sampled_flows %>%
     group_by(direction) %>%
     summarise(sampled = n()) %>%
     full_join(annual_sum, ., by = "direction") %>%
-    mutate(sampled_pct = percent_(sampled), tau = percent_(sampled, annual))
+    mutate(sampled_pct = swimctr::percent(sampled),
+      tau = swimctr::percent(sampled, annual))
   print(paste(nrow(sampled_flows), "daily of", nrow(annual_faf_flows),
     "annual FAF truckload equivalents sampled:"), quote = FALSE)
-  print(sampled_sum)
+  print(as.data.frame(sampled_sum))
 
   # Export the sampled daily truck flows
   return(select(sampled_flows, -randy))
