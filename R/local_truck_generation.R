@@ -38,7 +38,7 @@ local_truck_generation <- function(synthetic_firms, generation_probabilities,
   # Reformat the generation probabilities into tall records that we can merge
   # with our firms, dropping cases where probabilities are zero
   probabilities <- generation_probabilities %>%
-    tidyr::gather("truck_type", "p_gen", -category) %>%
+    gather("truck_type", "p_gen", -category) %>%
     filter(p_gen > 0.0)
 
   # Start by showing the aggregate trip (AT) generation using these values,
@@ -143,17 +143,19 @@ local_truck_generation <- function(synthetic_firms, generation_probabilities,
   # Because each firm can generate more than one type of truck we have one or
   # more trips from the same firm. We'll need to use a merge key that handles
   # both firmID and truck type.
-  origins <- rep(results$firmID, results$daily_trips)
+  origins <- rep(results$firm_ID, results$daily_trips)
   trucks <- rep(results$truck_type, results$daily_trips)
-  trip_records <- tibble(firmID = as.integer(origins), truck_type = as.character(trucks))
+  trip_records <- tibble(firm_ID = as.integer(origins),
+    truck_type = as.character(trucks))
 
   # Now we simply merge this with the input data table, ensuring that all of
   # the origins get matched with the firm's information. We'll drop the info
   # that we don't need in subsequent models.
   truck_origins <- trip_records %>%
-    left_join(results, by = c("firmID", "truck_type")) %>%
+    left_join(results, by = c("firm_ID", "truck_type")) %>%
     select(-p_gen, -daily_trips) %>%
-    mutate(taz = as.integer(taz), employees = as.integer(employees), origin = taz)
+    mutate(taz = as.integer(Azone), employees = as.integer(employees),
+      origin = Azone)
 
   # Compare the initial aggregate results with the microsimulated ones, summed
   # by trip generation categories. The results are for information only, for if
