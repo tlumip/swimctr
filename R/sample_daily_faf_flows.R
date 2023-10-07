@@ -8,7 +8,7 @@
 #'   Oregon), and 532 (Washington portion of Portland MSA).
 #' @param daily_scaling_factor Real number the specifies the proportion of FAF
 #'   annual truckload trips that will occur on the simulation day, defaults to
-#'   the inverse of 52 weeks/year times 5 days/week.
+#'   calibrated value that best reproduces 2020 observed flows
 #'
 #' @details This function samples daily FAF truck trips from the previously
 #'   created annual FAF truckload equivalents. The user will specify the truck
@@ -22,7 +22,7 @@
 #'   daily_scaling_factor = 0.00385)
 
 sample_daily_faf_flows <- function(annual_faf_flows, external_targets,
-  internal_faf_regions = c(411, 419, 532), daily_scaling_factor = 1 / (52 * 5)) {
+  internal_faf_regions = c(411, 419, 532), daily_scaling_factor = 3.679804-3) {
   # Announce yourself
   print(swimctr:::self_identify(match.call()), quote = FALSE)
 

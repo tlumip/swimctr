@@ -8,7 +8,7 @@ sample_daily_faf_flows(
   annual_faf_flows,
   external_targets,
   internal_faf_regions = c(411, 419, 532),
-  daily_scaling_factor = 1/(52 * 5)
+  daily_scaling_factor = 3.679804 - 3
 )
 }
 \arguments{
@@ -19,7 +19,7 @@ volumes at the FAF external zones}
 
 \item{daily_scaling_factor}{Real number the specifies the proportion of FAF
 annual truckload trips that will occur on the simulation day, defaults to
-the inverse of 52 weeks/year times 5 days/week.}
+calibrated value that best reproduces 2020 observed flows}
 
 \item{internal_faf_region}{A list of the FAF regions included within the SWIM
 halo, defaults to 411 (Oregon portion of Portland MSA), 419 (remainder of
