@@ -22,7 +22,7 @@
 #'   daily_scaling_factor = 0.00385)
 
 sample_daily_faf_flows <- function(annual_faf_flows, external_targets,
-  internal_faf_regions = c(411, 419, 532), daily_scaling_factor = 3.679804-3) {
+  internal_faf_regions = c(411, 419, 532), daily_scaling_factor = 3.679804e-3) {
   # Announce yourself
   print(swimctr:::self_identify(match.call()), quote = FALSE)
 
