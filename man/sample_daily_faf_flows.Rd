@@ -8,7 +8,7 @@ sample_daily_faf_flows(
   annual_faf_flows,
   external_targets,
   internal_faf_regions = c(411, 419, 532),
-  daily_scaling_factor = 0.003679804
+  daily_scaling_factor = 0.001274154
 )
 }
 \arguments{
