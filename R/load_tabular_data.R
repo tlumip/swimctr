@@ -32,9 +32,10 @@ load_tabular_data <- function(data_object, sep = ',', comment = '#',
     deparse(substitute(data_object)))
 
   # If the data object is already a tibble simply return it
-  if (data_class %in% c("tbl_df", "data.frame", "data.table", "spec_tbl_df")) {}
-  # Assume a string is a fully-qualified path name to a CSV file
-  else if (data_class == "character") {
+  if (data_class %in% c("tbl_df", "data.frame", "data.table", "spec_tbl_df")) {
+    if (verbose == TRUE) print("data_object is a tibble or data frame")
+  } else if (data_class == "character") {
+    # Assume a string is a fully-qualified path name to a CSV file
     if (file.exists(data_object)) {
       data_object <- readr::read_delim(data_object, guess_max = 1e6, delim = sep,
         comment = comment, show_col_types = FALSE, trim_ws = TRUE)
@@ -45,10 +46,11 @@ load_tabular_data <- function(data_object, sep = ',', comment = '#',
       error_msg <- paste0("File ", data_object, " does not exist")
       crash_signal <<- TRUE
     }
-  }
-  # Otherwise it is some type of data object other than a tibble or file with
-  # those contents
-  else {
+  } else {
+    # Otherwise it is some type of data object other than a tibble or file with
+    # those contents
+    print(paste0("DEBUG: data_object=", data_object, " data_class=", data_class,
+      " data_identifier=", data_identifier), quote = FALSE)
     error_msg <- paste0("Unable to process ", data_object, ": unknown class ",
       data_class)
     crash_signal <<- TRUE

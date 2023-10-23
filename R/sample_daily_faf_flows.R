@@ -2,7 +2,8 @@
 #'
 #' @param annual_faf_flows Tibble containing annual FAF truckload equivalents
 #' @param external_targets Tibble containing the target entry and exit truck
-#'   volumes at the FAF external zones
+#'   volumes at the FAF external zones for each possible `t.year`
+#' @param target_year Integer value of the current SWIM2 simulation year
 #' @param internal_faf_region A list of the FAF regions included within the SWIM
 #'   halo, defaults to 411 (Oregon portion of Portland MSA), 419 (remainder of
 #'   Oregon), and 532 (Washington portion of Portland MSA).
@@ -21,7 +22,7 @@
 #' daily_faf_flows <- sample_daily_FAF_flows(annual_faf_flows, external_targets,
 #'   daily_scaling_factor = 0.00385)
 
-sample_daily_faf_flows <- function(annual_faf_flows, external_targets,
+sample_daily_faf_flows <- function(annual_faf_flows, target_year, external_targets,
   internal_faf_regions = c(411, 419, 532), daily_scaling_factor = 1.274154e-3) {
   # Announce yourself
   print(swimctr:::self_identify(match.call()), quote = FALSE)
@@ -29,13 +30,22 @@ sample_daily_faf_flows <- function(annual_faf_flows, external_targets,
   # Define local helper functions
   decrement_ <- function(x) { eval.parent(substitute(x <- x - 1)) }
 
-  # Load the annual FAF flows if they are not supplied as a tibble
-  annual_faf_flows <- swimctr:::load_tabular_data(annual_faf_flows)
-
   # Load the target external truck flows if not supplied as a tibble and build
   # a list of the included external zone numbers
-  external_targets <- swimctr:::load_tabular_data(external_targets)
+  external_targets <- swimctr:::load_tabular_data(external_targets) %>%
+    filter(t.year == target_year)
+  if (nrow(external_targets) == 0) {
+    print(paste("No external zone contraint volumes found for t.year", t.year),
+      quote = FALSE)
+    stop("Missing external zone constraint volumes")
+  } else {
+    print(paste(nrow(external_targets), "external volumes extracted for t.year",
+      target_year), quote = FALSE)
+  }
   all_external_stations <- sort(unique(external_targets$external_sta))
+
+  # Load the annual FAF flows if they are not supplied as a tibble
+  annual_faf_flows <- swimctr:::load_tabular_data(annual_faf_flows)
 
   # Summarise the external flows by direction to obtain the percentage accounted
   # for by through movements (i.e., passing through the SWIM halo)

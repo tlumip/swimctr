@@ -89,7 +89,7 @@ get_runtime_parameters <- function(properties_FN, file_format = "simple",
   params <- params %>%
     mutate(status = case_when(
       token %in% c("root.dir", "repo.dir", "alpha2beta.file", "base.year",
-        "current.year", "scenario.outputs", "pecas.makeuse",
+        "current.year", "scenario.outputs", "pecas.makeuse", "t.year",
         "pecas.zonal.employment", "highway.assign.previous.skim.path") ~ status,
       substr(token, 1, 3) == "ct." ~ status,
       substr(token, 1, 4) == "cvs." ~ status,

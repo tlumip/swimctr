@@ -6,6 +6,7 @@
 \usage{
 sample_daily_faf_flows(
   annual_faf_flows,
+  target_year,
   external_targets,
   internal_faf_regions = c(411, 419, 532),
   daily_scaling_factor = 0.001274154
@@ -14,8 +15,10 @@ sample_daily_faf_flows(
 \arguments{
 \item{annual_faf_flows}{Tibble containing annual FAF truckload equivalents}
 
+\item{target_year}{Integer value of the current SWIM2 simulation year}
+
 \item{external_targets}{Tibble containing the target entry and exit truck
-volumes at the FAF external zones}
+volumes at the FAF external zones for each possible `t.year`}
 
 \item{daily_scaling_factor}{Real number the specifies the proportion of FAF
 annual truckload trips that will occur on the simulation day, defaults to
