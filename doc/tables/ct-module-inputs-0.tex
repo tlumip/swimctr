@@ -1,0 +1,25 @@
+\begin{sidewaystable} 
+\centering
+\caption{CT module inputs}\label{tab:ct-module-inputs}
+\begin{tabular}{lll}      %L{1.7in} L{2.5in}}
+\hline
+Property & Description & Default value \\
+\hline
+root.dir & SWIM root directory & None \\
+\gray alpha2beta.file & Alpha zone attributes & alpha2beta.csv \\
+ct.destination.utilities & Scaling factors for size term & ct\_destination\_utilities.csv \\
+\gray ct.external.gateways & Counts at external stations & ct\_external\_gateways.csv \\
+ct.generation.probabilities & Trip and tour generation rates & ct\_local\_generation\_probabilities.csv \\
+\gray ct.intermodal.connectors & Location and attributes of air and marine ports in Oregon & ct\_intermodal\_connectors.csv \\
+ct.random.seed & Simulation-level random number seed & 1293 \\
+\gray ct.sector.equivalencies & Mapping of AA sectors to CT categories & ct\_sector\_equivalencies.csv \\
+ct.temporal.factors & Hour of day distributions by truck type & ct\_temporal\_distributions.csv \\
+\gray ct.trip.length.targets & Trip length distributions by truck type & ct\_trip\_length\_targets.csv \\
+faf.empty.truck.factors & Percent of empty trucks by commodity & faf35\_empty\_truck\_factors.csv \\
+\gray faf.external.scaling.factor & Assumed stops on FAF tours & 2.5 \\
+faf.flow.data & FAF commodity flow database & faf42\_oregon\_redux.csv.gz \\
+\gray faf.truck.alloction.factors & Truck type by commodity & faf35\_truck\_allocation\_factors.csv \\
+faf.truck.equivalency.factors & Tons to truckload equivalents & faf35\_truck\_equivalency\_factors.csv \\
+\hline
+\end{tabular}
+\end{sidewaystable}

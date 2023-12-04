@@ -1,0 +1,46 @@
+\documentclass[10pt]{article}
+\usepackage{mathptmx, amsmath}
+\usepackage[margin=1in]{geometry}
+\usepackage{rotating, graphicx}
+\usepackage[table]{xcolor}
+\usepackage{natbib}
+\usepackage{url}
+\usepackage{threeparttable}
+\usepackage{multirow}
+
+\usepackage{array}
+\newcolumntype{L}[1]{>{\raggedright\let\newline\\\arraybackslash\hspace{0pt}}p{#1}}
+
+\title{Commercial Travel Module Version 3.0 Update}
+\author{Rick Donnelly}
+\date{\today}
+
+\begin{document}
+\raggedbottom
+\newcommand{\gray}{\rowcolor[gray]{.95}}
+\setlength\extrarowheight{2pt}
+\fontsize{11.75}{14.25}\rm
+\setlength{\bibsep}{0pt}
+\bibliographystyle{agsm}
+
+% Ignore glossary entries in the document
+\newcommand{\gls}{}
+
+\maketitle
+
+\begin{abstract}
+\normalsize 
+\noindent The commercial travel (CT) module of the Oregon Statewide Integrated Model Version 2 (SWIM2) system simulates local and long-distance travel made in commercial vehicles within Oregon. The current CT module uses commodity flow data from the FHWA Freight Analysis Framework (FAF) to depict long-distance flows, replacing an earlier ad hoc inter-regional trade model. These flows are added to local truck tours simulated as a function of employment and floorspace within the SWIM2 modeled area. This document updates the original documentation to include the results of the 2023 updates to the CT module and validation results. 
+\end{abstract}
+
+\tableofcontents
+\listoffigures
+\listoftables
+
+% We need to make a few local changes to this document: (1) Comment out the chapter header,
+% (2) uncomment the introduction section header, (3) change the graphics directory
+\include{ct}
+
+% Copy the bibliography file directly from the treso-doc repo
+\bibliography{devguide}
+\end{document}
