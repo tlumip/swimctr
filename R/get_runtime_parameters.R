@@ -68,6 +68,11 @@ get_runtime_parameters <- function(properties_FN, file_format = "simple",
     params <- mutate(params, status = case_when(dir.exists(value) ~ "dir",
       file.exists(value) ~ "file", TRUE ~ "literal"))
 
+    # Ensure that output files are not read even though they exists.
+    params <- mutate(params, status = ifelse(str_detect(token, "ct.truck.trips") |
+        str_detect(token, "et.truck.trips"),
+        "literal", status))
+
     # Zipped matrix (.zmx) or OMX (.omx) files are a special case that we don't
     # want to read into our environment. We'll just pass this filename along so
     # flag it as a literal string
@@ -90,7 +95,7 @@ get_runtime_parameters <- function(properties_FN, file_format = "simple",
     mutate(status = case_when(
       token %in% c("root.dir", "repo.dir", "alpha2beta.file", "base.year",
         "current.year", "scenario.outputs", "pecas.makeuse", "t.year",
-        "pecas.zonal.employment", "highway.assign.previous.skim.path") ~ status,
+        "pecas.zonal.employment", "highway.assign.previous.skim.path", "et.truck.trips") ~ status,
       substr(token, 1, 3) == "ct." ~ status,
       substr(token, 1, 4) == "cvs." ~ status,
       substr(token, 1, 4) == "faf." ~ status, TRUE ~ "drop")) %>%
@@ -111,7 +116,7 @@ get_runtime_parameters <- function(properties_FN, file_format = "simple",
       # Read the contents of the file into the environment. At the present time
       # we can only handle CSV files.
       RTP[[params$token[i]]] <- readr::read_csv(params$value[i],
-        show_col_types = FALSE, guess_max = 1e6, progress = FALSE)
+        guess_max = 1e6, progress = FALSE)
       rows <- nrow(RTP[[params$token[i]]])
       cols <- length(colnames(RTP[[params$token[i]]]))
       params$outcome[i] <- paste0(params$token[i], ' -> ', params$value[i],

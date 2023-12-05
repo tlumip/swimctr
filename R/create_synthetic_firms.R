@@ -49,7 +49,7 @@ create_synthetic_firms <- function(zonal_data, sector_equivalencies,
     # The remaining counties in Oregon
     STATEFIPS == 41 ~ 419,
     # And everything else in the halo collar of zones
-    TRUE ~ NA_integer_))
+    TRUE ~ NA_real_))
 
   # Merge the FAF region and FIPS code for each alpha zone to the list of
   # employees by alpha zone and CT employment category
