@@ -61,7 +61,6 @@ The FAF data does not include estimates of truck flows. A [freight assignment pr
 
 + `scenario_name\inputs\parameters\`:[`faf4_truck_allocation_factors.csv`](https://github.com/tlumip/tlumip/blob/master/root/scenario/inputs/parameters/faf4_truck_allocation_factors.csv) Factors defining the type of trucks used in inter-regional freight distribution are retained from the Oak Ridge process described above.
 + `scenario_name\inputs\parameters\`:[`cvs_payload_weight_distributions.csv`](https://github.com/tlumip/tlumip/blob/master/root/scenario/inputs/parameters/cvs_payload_weight_distributions.csv) A set of distributions used to calculate truckload equivalents from annual tonnages by commodity reported in the FAF data, compiled from the CCFS
-+ `scenario_name\inputs\parameters\`:[`cvs_stop_pattern_frequencies.csv`](https://github.com/tlumip/tlumip/blob/master/root/scenario/inputs/parameters/cvs_stop_pattern_frequencies.csv) A set of distributions for stops per truck tour by truck type and distance range, compiled from the CCFS
 
 Empty trucks were included in the CCFS, obviating the step used in the Oak Ridge approach to separately estimate them. Information about how to [update the FAF inputs to the CT module](#updating-faf-inputs-to-ct-model) are provided to enable the analyst to quickly take advantage of newer FAF data without updating the CT module.
 

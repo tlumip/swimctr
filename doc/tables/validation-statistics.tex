@@ -1,0 +1,36 @@
+\begin{table}
+\centering
+\caption{Validation summary statistics}
+\label{tab:ct-assignment-statistics}
+
+\begin{tabular}{lrrrrrr}
+\\[-5pt]
+\multicolumn{7}{c}{(a) Summary by ODOT regions} \\
+\hline
+Region & n & Avg count & CV count & avg assigned & RMSE & PRMSE \\
+\hline
+1 Portland Metro & 55 & 4,163 & 0.91 & 3,444 & 2,246 & 0.54 \\
+\gray 2 Willamette Valley & 114 & 1,514 & 1.75 & 1,155 & 1,072 & 0.71 \\
+3 Southwest & 48 & 2,146 & 1.25 & 1,608 & 1,002 & 0.47 \\
+\gray 4 Central & 68 & 1,060 & 1.09 & 773 & 574 & 0.54 \\
+5 Eastern & 66 & 1,680 & 1.09 & 873 & 1,308 & 0.78 \\
+\end{tabular}
+
+\begin{tabular}{lrrrrrr}
+\\[-5pt]
+\multicolumn{7}{c}{(b) Summary by roadway classification} \\
+\hline
+Classification & n & Avg count & CV count & avg assigned & RMSE & PRMSE \\
+\hline
+01 Rural Interstate & 46 & 5,265 & 0.37 & 3,462 & 2,035 & 0.39 \\
+\gray 02 Rural principal arterial & 122 & 526 & 0.76 & 346 & 418 & 0.79 \\
+04 Rural minor arterial & 49 & 255 & 1.03 & 197 & 291 & 1.14 \\
+\gray 06 Rural minor collector & 3 & 463 & 0.7 & 445 & 106 & 0.23 \\
+07 Rural local & 6 & 71 & 0.68 & 22 & 71.7 & 1.01 \\
+\gray 11 Urban freeway & 57 & 5,597 & 0.57 & 4,482 & 2,526 & 0.45 \\
+12 Urban principal arterial & 58 & 788 & 0.67 & 669 & 491 & 0.62 \\
+\gray 14 Urban minor arterial & 8 & 230 & 0.97 & 149 & 178 & 0.78 \\
+18 Urban freeway ramp & 2 & 150 & 0 & 164 & 77 & 0.51 \\
+\hline
+\end{tabular}
+\end{table}
