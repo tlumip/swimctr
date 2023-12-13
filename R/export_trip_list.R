@@ -65,7 +65,8 @@ export_trip_list <- function(hourly_faf_trips, hourly_local_trips) {
 
   # Now simply combine amd return the two datasets
   combined <- bind_rows(regional, local) %>%
-    arrange(origin, destination, tripStartTime)
+    arrange(origin, destination, tripStartTime) %>%
+    mutate(truckID = 1:n())
   print(paste0(nrow(combined), " trip records generated (", nrow(regional),
     " regional and ", nrow(local), " local trips)"), quote = FALSE)
   return(combined)
