@@ -4,14 +4,11 @@
 \alias{summarize_zonal_households}
 \title{Summarize number of households per traffic analysis zone}
 \usage{
-summarize_zonal_households(zonal_data, save_to = NULL)
+summarize_zonal_households(zonal_data)
 }
 \arguments{
-\item{zonal_data}{Data frame containing zonal population and employment
+\item{zonal_data}{A tibble containing zonal population and employment
 estimates at the traffic analysis zone level}
-
-\item{save_to}{File name for saving the total number of households by traffic
-analysis zone in comma-separated value format (optional)}
 }
 \description{
 Summarize number of households per traffic analysis zone
@@ -24,5 +21,5 @@ This simple function tallies the number of households within each
   comma-separated value file if desired.
 }
 \examples{
-total_households <- summarize_zonal_households(zonal_data, "houeholds.csv")
+total_households <- summarize_zonal_households(zonal_data)
 }

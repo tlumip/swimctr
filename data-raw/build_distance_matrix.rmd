@@ -1,0 +1,84 @@
+## Building a FAF v4.5.1 inter-regional distance matrix
+[Rick Donnelly](mailto:rick.donnelly@gmail.com) | `r date()`
+```{r init, echo = FALSE, message = FALSE, warning = FALSE}
+library(tidyverse); library(knitr); library(kableExtra)
+options(width = 98, dplyr.summarise.inform = FALSE)
+kable_ <- function(df, ...) {
+  knitr::kable(df, "html") %>%
+  kable_styling(bootstrap_options = c("condensed", "striped"), full_width = FALSE, font_size = 13)
+}
+```
+
+<br>
+The `wgt_dist` variable was included in the FAF Version 4.x regional databases. It defined the weighted mean distance between the domestic origin (`dms_orig`) and destination (`dms_dest`) for each record in the database, presumably using the exact coordinates of each trip end. The distance is weighted because there might be two or more firms in each OD pair or a single firm might ship to two different firms within the same destination FAF region. Unfortunately, this variable is absent from the FAF Version 5 data. We don't _need_ this variable for the `swimctr` package to work but it is nice to be able to append a distance for VMT calculations for trips with one or both trips outside of the SWIM2 halo. Thus, we can build an inter-regional distance matrix from the final FAF Version 4.5.1 database that we can append to the Version 5 data. 
+
+We begin by reading the FAF v4.5.1 regional database. This file does not need to be stored with SWIM data, as we'll use it only once. We are only interested in the truck mode (`dms_mode` == 1) so we can jettison interregional flows made by all other modes.
+```{r get_faf451}
+faf451.trucks <- "/Volumes/hvelv/Data/FAF4/v4.5.1/FAF4.5.1.csv.xz" %>%
+  readr::read_csv(guess_max = 2e6, show_col_types = FALSE) %>%
+  filter(!is.na(wgt_dist), dms_mode == 1) %>%
+  select(dms_orig, dms_dest, tons_2017, wgt_dist, sctg2)
+```
+
+If all of the transactions between each OD pair have the same weighted distance (`wgt_dist`) the standard deviation (SD) of all observations should be zero. Let's plot the weighted distance versus its standard deviation for all of the records in the regional database to visually see if that is the case.
+```{r unscaled_view, warning = FALSE}
+unscaled <- faf451.trucks %>%
+  group_by(dms_orig, dms_dest) %>%
+  summarise(wgt_sd = sd(wgt_dist), wgt_mean = mean(wgt_dist), n = n())
+ggplot(unscaled, aes(x = wgt_sd, y = wgt_mean)) + geom_point(size = 0.5, alpha = 0.25) +
+  labs(x = "standard deviation(wgt_dist)", y = "mean(wgt_dist)")
+```
+
+We find that most OD pairs have different weighted distances (`wgt_dist`) coded, which we can handle in one of several ways. But let's look at further segmentation first.
+
+### Segregating by commodity
+
+It might be that the distances vary between each FAF region pair by commodity. So let's expand our analyses to examine that possibility. For this analysis we can remove records with unknown commodities.
+```{r commodities, fig.width = 9.3, fig.height = 18.0, warning = FALSE}
+by_commodity <- faf451.trucks %>%
+  filter(sctg2 < 99) %>%
+  group_by(dms_orig, dms_dest, sctg2) %>%
+  summarise(wgt_sd = sd(wgt_dist), wgt_mean = mean(wgt_dist), n = n())
+ggplot(by_commodity, aes(x = wgt_sd, y = wgt_mean)) + geom_point(size = 0.5, alpha = 0.25) +
+  labs(x = "standard deviation(wgt_dist)", y = "mean(wgt_dist)") + facet_wrap(~sctg2, ncol = 4)
+```
+
+That did not improve the results, as all commodities have roughly the same patterns as all commodities combined. We're left to conclude that the weighted distance in the FAF Version 4.x data are between actual origins and destinations recorded in the 2017 Commodity Flow Survey and related data rather than between FAF region centroids. Averaging the results should move us closer to the latter.
+
+### Adding newer interchanges
+
+FAF Version 5 includes some FAF region interchanges that were not included in FAF Version 4.x, so distances won't appear in the latter for them. We can add them manually here. When this script is updated for FAF 6 and beyond the user will need to add to this list if required.
+```{r add_interchanges}
+new_interchanges <- tribble(
+  ~dms_orig, ~dms_dest, ~wgt_dist, ~distal_trip_end,
+       "99",     "419",      2986, "Rest of CT",
+       "99",     "532",      2973, "Rest of CT",
+      "109",     "532",      2888, "Rest of DE",
+      "111",     "532",      2807, "Washington-Arlington-Alexandria",
+      "132",     "532",      2887, "Savannah-Hinesville-Statesboro",
+      "212",     "532",      2377, "Louisville-Jefferson-Elizabethtown",
+      "222",     "419",      2359, "Lake Charles-Jennings",
+      "222",     "532",      2347, "Lake Charles-Jennings",
+      "419",     "483",      2351, "Corpus Christi-Kingsville-Alice"
+) %>% select(-distal_trip_end)
+reverse_direction <- new_interchanges
+colnames(reverse_direction) <- c("dms_dest", "dms_orig", "wgt_dist")
+new_interchanges <- bind_rows(new_interchanges, reverse_direction)
+```
+
+### Save the results
+
+So, we will calculate a reweighted mean using the observed 2017 tonnage for each flow record. We could calculate this reweighted distance by commodity to be more precise but that is probably overkill. We will kill off duplicates, which will occur if the user specifies a new interchange that already exists in the FAF 4.5.1 distances.
+```{r scaled_distances, warning = FALSE}
+export <- unscaled %>%
+  rename(wgt_dist = wgt_mean) %>%
+  select(dms_orig, dms_dest, wgt_dist) %>%
+  bind_rows(., new_interchanges) %>%
+  mutate(wgt_dist = as.integer(round(wgt_dist))) %>%
+  distinct(dms_orig, dms_dest, .keep_all = TRUE) %>%
+  arrange(dms_orig, dms_dest)
+target_filename <- "faf451_distances.csv"
+readr::write_csv(export, target_filename)
+```
+
+We will use these reweighted distances with the FAF Version 5+ data, although it will be smart to check for existance of the `wgt_dist` variable first in case FHWA reintroduces this variable in later releases.

@@ -1,15 +1,13 @@
 #' Simple destination choice model for local (internal) truck trips
 #'
-#' @param truck_origins Data frame containing discrete daily trips for each
-#'   tour, usually produced by a trip or tour generation function
-#' @param skim_matrices Data frame containing skim distance and travel time for
+#' @param truck_origins A tibble containing discrete daily trips for each tour,
+#'   usually produced by a trip or tour generation function
+#' @param skim_matrices A tibble containing skim distance and travel time for
 #'   each origin-destination pair, usually only containing records for zone
 #'   pairs that fall within user-defined threshold (i.e., excludes what would be
 #'   only a long-distance trip)
-#' @param utility_parameters Data frame containing weights for distance and
+#' @param utility_parameters A tibble containing weights for distance and
 #'   attractors for each truck type defined in the simulation
-#' @param save_to File name for saving the trip records with destinations
-#'   appended in comma-separated value format (optional)
 #'
 #' @details This is a simple destination choice model that mimics a singly-
 #'   constrained gravity model. It samples eligible destinations based upon the
@@ -29,26 +27,27 @@
 #' @export
 #' @examples
 #' sample_local_truck_destinations(truck_origins, skim_matrices,
-#'   utility_parameters, "daily-truck-odflows.csv")
+#'   utility_parameters)
 
 sample_local_truck_destinations <- function(truck_origins, skim_matrices,
-  trip_length_targets, utility_parameters, save_to = NULL) {
+  trip_length_targets, utility_parameters) {
+  print(swimctr:::self_identify(match.call()), quote = FALSE)
   simulation_start <- proc.time()
 
   # The trip length targets are defined by truck type, and provided in wide
   # format. Convert to tall format to make subsetting easier.
   max_target_distance <- max(trip_length_targets$distance)
   targets <- trip_length_targets %>%
-    tidyr::gather(truck_type, probability, -distance) %>%
-    dplyr::filter(probability > 0.0) %>%
-    dplyr::rename(distanceI = distance)  # To match with integer distance
+    gather(truck_type, probability, -distance) %>%
+    filter(probability > 0.0) %>%
+    rename(distanceI = distance)  # To match with integer distance
 
   # It is possible that a zone might be coded further from its nearest neighbor
   # such that its intrazonal travel time is longer than the maximum target
   # value. That is likely to be error in skim processing, for intrazonal times
   # are small even in rural areas. Thus, we will recode intrazonal distances to
   # fall within our specified range, so that at least intrazonal is an option.
-  skim_matrices <- dplyr::mutate(skim_matrices,
+  skim_matrices <- mutate(skim_matrices,
     distance = ifelse(origin == destination & distance > max_target_distance,
       max_target_distance-1, distance))
 
@@ -56,8 +55,8 @@ sample_local_truck_destinations <- function(truck_origins, skim_matrices,
   # threshold (maximum target distance), which will hopefully make processing
   # the remainders faster
   skims <- skim_matrices %>%
-    dplyr::filter(distance <= max_target_distance) %>%
-    dplyr::mutate(distanceI = round(distance, 0))
+    filter(distance <= max_target_distance) %>%
+    mutate(distanceI = round(distance, 0))
 
   # Create a list of eligible destination zones from the skim matrix (if it is
   # not defined then it is outside of our threshold, or is zone that has no
@@ -76,9 +75,9 @@ sample_local_truck_destinations <- function(truck_origins, skim_matrices,
   for (c in CTO) {
     if (!c %in% dzones) problem_children <- c(problem_children, c)
   }
-  if (length(problem_children>0)) {
+  if (length(problem_children > 0)) {
     error_message <- "Alpha zones in trip list with no corresponding skim"
-    print(paste(error_message, ':', sep = ''), quote = FALSE)
+    print(paste0(error_message, ':'), quote = FALSE)
     print(unlist(problem_children))
     stop(error_message)
   }
@@ -87,9 +86,9 @@ sample_local_truck_destinations <- function(truck_origins, skim_matrices,
   # of the zones defined in the skim matrix, even if some have zero truck trips
   # associated with it. Thus, we'll substitute any missing values with zeros.
   attractors <- truck_origins %>%
-    dplyr::group_by(origin, truck_type) %>%
-    dplyr::summarise(attractors = n()) %>%
-    dplyr::rename(destination = origin)
+    group_by(origin, truck_type) %>%
+    summarise(attractors = n()) %>%
+    rename(destination = origin)
 
   # Finally, run the model. The ideal distributions and alpha parameters differ
   # by truck type, so we will handle each one differently. At the end of
@@ -100,49 +99,48 @@ sample_local_truck_destinations <- function(truck_origins, skim_matrices,
   for (t in truck_types) {
 
     print(paste("Sampling destinations for",
-      nrow(dplyr::filter(truck_origins, truck_type==t)), t, "origins"), quote=FALSE)
+      nrow(filter(truck_origins, truck_type==t)), t, "origins"), quote=FALSE)
 
     # Grab the target trip distances for this particular truck type only
-    these_targets <- dplyr::filter(targets, truck_type == t)
+    these_targets <- filter(targets, truck_type == t)
 
     # Grab the relevant attractors and scale them
     these_attractors <- attractors %>%
-      dplyr::filter(truck_type == t) %>%
-      dplyr::mutate(attractors = attractors*
+      filter(truck_type == t) %>%
+      mutate(attractors = attractors *
         utility_parameters$alpha2[utility_parameters$truck_type == t])
 
     # Process each origin in turn
     for (this_origin in origin_zones) {
       # Determine how many trips we have
-      these_origins <- dplyr::filter(truck_origins, origin == this_origin,
-        truck_type == t)
+      these_origins <- filter(truck_origins, origin == this_origin, truck_type == t)
       N <- nrow(these_origins)
-      if (N==0) next
+      if (N == 0) next
 
       # We first need to assign probability to each integer distance in the skim
       # matrix, which we can easily do by merging it with the targets. Drop
       # cases where the probability is undefined (i.e., outside our max target
       # distance)
       these_skims <- skims %>%
-        dplyr::filter(origin == this_origin) %>%
-        dplyr::left_join(these_targets, by = "distanceI") %>%
-        dplyr::filter(!is.na(probability)) %>%
-        dplyr::mutate(probability = probability *
-            utility_parameters$alpha1[utility_parameters$truck_type == t])
+        filter(origin == this_origin) %>%
+        left_join(these_targets, by = "distanceI") %>%
+        filter(!is.na(probability)) %>%
+        mutate(probability = probability *
+          utility_parameters$alpha1[utility_parameters$truck_type == t])
 
       # But othewise calculate the total attractiveness (zed) of each possible
       # destination, and then sample from that the required number of times
       combined <- these_skims %>%
-        dplyr::left_join(these_attractors, by = "destination") %>%
-        dplyr::mutate(zed = probability*attractors) %>%
-        dplyr::filter(!is.na(zed))
+        left_join(these_attractors, by = "destination") %>%
+        mutate(zed = probability * attractors) %>%
+        filter(!is.na(zed))
 
       # Check that we have at least two destination choices. If not, show us the
       # 10 closest skims and attractions associated with them. Then create a new
       # data frame that allows us to choose intrazonal trip.
-      if (nrow(combined)<2) {
+      if (nrow(combined) < 2) {
         # Tattle on the closest neighboring zone
-        ex_skims <- dplyr::filter(skim_matrices, origin == this_origin,
+        ex_skims <- filter(skim_matrices, origin == this_origin,
           destination != this_origin)
         nearest_neighbor <- round(min(ex_skims$distance, na.rm = TRUE), 1)
         print(paste("No neighbor within range: zone=", this_origin,
@@ -150,15 +148,14 @@ sample_local_truck_destinations <- function(truck_origins, skim_matrices,
           " trips set to intrazonal", sep = ''), quote = FALSE)
 
         # Then spin up the intrazonal alternative
-        combined <- dplyr::data_frame(destination = this_origin, zed = 0.5,
-          seq = 1:2)
+        combined <- tibble(destination = this_origin, zed = 0.5, seq = 1:2)
       }
 
       # And finally, choose the destination(s) for trip originating in the
       # currently processed origin
       sampled_destinations <- sample(combined$destination, N, replace = TRUE,
         prob = combined$zed)
-      truck_origins$destination[truck_origins$origin==this_origin &
+      truck_origins$destination[truck_origins$origin == this_origin &
           truck_origins$truck_type == t] <- sampled_destinations
     }
   }
@@ -166,8 +163,8 @@ sample_local_truck_destinations <- function(truck_origins, skim_matrices,
   # There should be none, but check that we have no cases where the destination
   # is a missing value. If we find that pathological case then stop the
   # simulation.
-  problems <- dplyr::filter(truck_origins, is.na(destination))
-  if (nrow(problems)>0) {
+  problems <- filter(truck_origins, is.na(destination))
+  if (nrow(problems) > 0) {
     error_message <- paste("Destinations not processed for", nrow(problems),
       "cases")
     readr::write_csv(problems, "destinations_not_assigned.csv")
@@ -176,24 +173,20 @@ sample_local_truck_destinations <- function(truck_origins, skim_matrices,
 
   # Append the travel time and distance for each distance to the trip records
   appended <- truck_origins %>%
-    dplyr::left_join(skim_matrices, by = c("origin", "destination"))
+    left_join(skim_matrices, by = c("origin", "destination"))
 
   # Report summary statistics for this truck type
   for (t in truck_types) {
-    these_trucks <- dplyr::filter(appended, truck_type == t)
-    S <- paste("Sampled ", t, " destinations: n=", nrow(these_trucks), " avg distance=",
+    these_trucks <- filter(appended, truck_type == t)
+    S <- paste0("Sampled ", t, " destinations: n=", nrow(these_trucks), " avg distance=",
       round(mean(these_trucks$distance, na.rm = TRUE),1), " avg travel time=",
-      round(mean(these_trucks$travel_time, na.rm = TRUE),1), sep = '')
-    print(S, quote=FALSE)
+      round(mean(these_trucks$travel_time, na.rm = TRUE),1))
+    print(S, quote = FALSE)
   }
-
-  # If the user has asked to save intermediate results now would be great time
-  # to do so
-  if (!is.null(save_to)) readr::write_csv(appended, save_to)
 
   # Tell us the outcome and exit stage right
   simulation_stop <- proc.time()
   elapsed_seconds <- round((simulation_stop-simulation_start)[["elapsed"]], 1)
-  print(paste("Simulation time=", elapsed_seconds, "seconds"), quote=FALSE)
-  appended
+  print(paste("Simulation time=", elapsed_seconds, "seconds"), quote = FALSE)
+  return(appended)
 }

@@ -1,0 +1,27 @@
+\begin{table}  % 7 46
+\centering
+\caption{CT module outputs}\label{tab:ct-module-outputs}
+\begin{threeparttable}
+\begin{tabular}{L{3.3in} L{1.7in} l}
+\hline
+Data element & File(s) & Users \\
+\hline
+Zonal activity estimates & zonal\_data.csv & Diagnostics \\
+\gray Daily local truck trip origins\tnote{a} & daily\_truck\_origins.csv & Diagnostics \\
+Hourly local truck trips$^a$ & hourly\_truck\_trips.csv & Diagnostics \\
+\gray Daily local truck tours\tnote{b} & daily\_truck\_tours.csv & Diagnostics \\
+Daily local truck tour stops$^b$ & daily\_truck\_stops.csv & Diagnostics \\
+\gray Daily local truck tour stops with activity locations$^b$ & located\_truck\_stops.csv & Diagnostics \\
+Annual FAF truckload equivalents & annual\_faf\_trucks.csv & Diagnostics \\
+\gray Daily FAF truck trips & daily\_faf\_trucks.csv & Diagnostics \\
+Daily FAF truck trips with activity locations & located\_faf\_trucks.csv & Diagnostics \\
+\gray Hourly FAF and local truck trips & combined\_truck\_trips.csv & CT, VISUM \\
+\hline
+\end{tabular}
+\begin{tablenotes}
+\footnotesize
+\item[a] Files typically generated when running the trip-based framework
+\item[b] Files typically generated when running the tour-based framework
+\end{tablenotes}
+\end{threeparttable}
+\end{table}

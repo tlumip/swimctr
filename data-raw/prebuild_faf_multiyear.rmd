@@ -1,0 +1,78 @@
+## Prebuild FAF database for use with the CT module
+[Rick Donnelly](mailto:rick.donnelly@gmail.com) | `r date()`
+```{r init, echo = FALSE, message = FALSE, warning = FALSE}
+suppressPackageStartupMessages(library(tidyverse))
+suppressPackageStartupMessages(library(knitr))
+suppressPackageStartupMessages(library(kableExtra))
+options(width = 98, dplyr.summarise.inform = FALSE)
+percent_ <- function(x, y = sum(x), places = 1) round((x/y)*100, places)
+kable_ <- function(df, ...) {
+  knitr::kable(df, "html") %>%
+  kable_styling(bootstrap_options = c("condensed", "striped"), full_width = FALSE, font_size = 13)
+}
+```
+
+<br>
+The FHWA [Freight Analysis Framework](https://ops.fhwa.dot.gov/freight/freight_analysis/faf/) (FAF) is a key data product used in Oregon's [Statewide Integrated Model](https://www.oregon.gov/odot/Planning/Pages/Technical-Tools.aspx) (SWIM). Inter-regional commodity flow forecasts by commodity and mode of transport depict trade with external regions beyond the SWIM halo around Oregon as well as long-distance freight movements within Oregon and the halo. The FAF reports annual value and tonnage between 143 internal and 8 external FAF regions. In order to use these data with SWIM's commercial travel (CT) models several transformations are necessary, to include mapping the commodity flows to truckload equivalents.
+
+The FAF flows are static inputs to the SWIM system. Thus, the data from each FAF version needs to be morphed into the format required by CT only once. The morphed data can be stored for all subsequent SWIM runs until a newer FAF version is adopted, saving considerable processing time during each run. This script encapsulates this process. A description of each step and some summaries are provided for each step of the process.
+
+The FAF regional database is distributed as a single comma-separated value (CSV) file in Zip format. FHWA distributes two versions of the database. The first, typically named _fafV.M.zip_, where _V.M_ is the version number of the FAF data. At this writing FAF Version 5.3 is the most current, with the database distributed in `faf5.3.zip`. The forecasts included in this file are based upon a mid-range economic forecast. An alternative, not always available for any given FAF release, contains low- and high-range forecasts as well. This file is typically named _fafV.M_HiLoForecasts.zip_.
+
+In both cases the Zip file normally only contains a single CSV file, named as above. The code below should read that file without modification. However, in some FAF releases an extra file was included that our code cannot handle. If this happens simply unzip the file and edit `FN` below to point to that file. Our translation process starts with reading that file, which will be read from memory several times during our translation process.
+```{r first}
+target <- "~/Desktop/FAF5.4.csv.xz"
+fhwa_db <- readr::read_csv(target, guess_max = 1e6, show_col_types = FALSE)
+kable_(swimctr::list_tibble_contents(fhwa_db))
+```
+
+We next define the FAF regions included within the SWIM modeled area. We also define FAF regions that cannot be reached by surface transport modes. The only domestic FAF regions falling into that category are in Hawaii. 
+```{r second}
+IGNORED_REGIONS <- c(151, 159)   # Honolulu, rest of Hawaii
+SWIM_FAF_REGIONS <- c(411, 419, 532)  # Portland, rest of Oregon, Vancouver
+```
+
+In FAF Version 4 the weighted distance for each transaction (record) in the data were provided. The distances were from the origin point to destination point from the source data (typically the 2017 [Commodity Flow Survey](https://www.census.gov/programs-surveys/cfs.html)). Since there were typically several flow records in the source data a tonnage-weighted distance was calculated for each FAF region interchange. This allowed us to report the full vehicle miles of travel for truck trips entering and leaving Oregon rather than just their mileage on the SWIM network. These weighted distances were inexplicably replaced by far less useful wide distance bands in FAF Version 5. We have separately compiled a database of FAF 4.5.1 weighted distances (`wgt_dist`) that we must append to the FAF 5 and later data to regain the same distance precision. In this step we read the data needed to do so.
+```{r three}
+FN <- "~/Models/swimctr/data-raw/faf451_distances.csv"
+distances <- swimctr:::load_tabular_data(FN)
+kable_(swimctr::list_tibble_contents(distances))
+append_distances <- swimctr::append_weighted_distances(fhwa_db, distances)
+```
+
+The SWIM modeled area only includes Oregon and a halo of immediately adjacent counties. The flows to and from Oregon from regions outside of the SWIM halo will unambiguously be extracted from the FAF regional database by virtue of one or both trip ends being within the halo. However, through trips must be explicitly defined. The `faf_through_equivalencies` file lists one or more routes for flows that might pass through Oregon. Those competing routes that don't pass through the halo have zeroes coded as entry and exit points. We can ignore those for now, as there will always be competing routes that do go through Oregon coded in this file. 
+```{r four}
+FN <- "~/Models/swimctr/data-raw/faf_through_equivalencies.csv"
+external_regions <- swimctr:::load_tabular_data(FN) %>% filter(entry > 0, exit > 0)
+kable_(swimctr::list_tibble_contents(external_regions))
+```
+
+Next we determine which years are included in the FAF regional database:
+```{r five}
+yf <- grep("tons_", colnames(append_distances), value = TRUE)
+years_found <- as.integer(sub("tons_", "", yf))
+noquote(paste("Years in FAF dataset:", paste0(years_found, collapse = " ")))
+```
+
+We will now build file that contains the data for each forecast year included in the FAF regional database. The latter are in wide format, where data for all years are included on each record in the database. We will transform this into tall format, where each record contains data for each year. That is, a single record for each origin, destination, mode, and commodity in the FAF regional database now becomes several records, one for each year. This makes selecting specific years to align with each SWIM simulation year quick and efficient. 
+```{r six}
+options(scipen = 999)  # Suppresses scientific notion in summaries
+combined <- tibble()
+for (this_year in years_found) {
+  process_this_year <- swimctr::preprocess_faf_database(append_distances,
+    target_year = this_year, internal_regions = SWIM_FAF_REGIONS,
+    external_regions = external_regions)
+  combined <- bind_rows(combined, process_this_year)
+}
+```
+
+Finally, we will write the combined dataset to both [feather](https://www.rstudio.com/blog/feather/) and CSV text files. Feather is very fast binary file format that loads quicker than native R binary files but at the cost of storing the data in uncompressed format. It is left to the user to later compress the CSV file with Zip or [xz](https://tukaani.org/xz/) compression if desired, both of which can be read by the `readr::read_csv()` function used in CT.
+```{r seven}
+feather::write_feather(combined, "./prebuild_faf_multiyear.feather")
+readr::write_csv(combined, "./prebuild_faf_multiyear.csv")
+```
+
+The files are now ready for use by the CT modules. The output files contain `r nrow(combined)` records and the following fields:
+```{r eight}
+kable_(swimctr::list_tibble_contents(combined))
+```

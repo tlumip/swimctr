@@ -4,9 +4,13 @@
 \alias{allocate_faf_to_zones}
 \title{Allocate FAF daily truck flows to traffic analysis zones}
 \usage{
-allocate_faf_to_zones(daily_faf_trips, synthetic_firms, makeuse,
-  intermodal_connectors, external_gateways, cluster_log = "cluster.log",
-  save_to = NULL)
+allocate_faf_to_zones(
+  daily_faf_trips,
+  synthetic_firms,
+  makeuse,
+  intermodal_connectors,
+  swim_external_zones = 5001:5012
+)
 }
 \arguments{
 \item{daily_faf_trips}{Data frame containing discrete daily FAF truck trips}
@@ -23,20 +27,14 @@ percentage of such flows originating and terminating within the FAF region
 they are situated in should be allocated to them}
 
 \item{external_gateways}{Data frame containing the external stations (traffic
-analysis zone) that truck flows to or from FAF regions outside of the 
+analysis zone) that truck flows to or from FAF regions outside of the
 modeled area enter or leave through}
-
-\item{cluster_log}{The filename of a file used to store output from the
-doParallel cluster (optional)}
-
-\item{save_to}{File name for saving the FAF trip records with traffic
-analysis zones appended in comma-separated value format (optional)}
 }
 \description{
 Allocate FAF daily truck flows to traffic analysis zones
 }
 \details{
-This function allocates discrete daily FAF (inter-regional) truck 
+This function allocates discrete daily FAF (inter-regional) truck
   flows, coded to FAF regions, to traffic analysis zones within the modeled
   area. Input-output coefficients are used to map the commodity carried by
   each truck (or formerly or next carried, in case of empty trucks) to the
@@ -44,7 +42,7 @@ This function allocates discrete daily FAF (inter-regional) truck
   chosen industry within all zones situated within the FAF region are sampled
   to choose the internal trip end. Finally, the flows are assigned to
   external gateways entering or leaving the region. For trucks, external FAF
-  regions are associated with a particular gateway. Note that through truck 
+  regions are associated with a particular gateway. Note that through truck
   trips are coded to two external gateways. For import or export flows the
   appropriate intermodal connector (air or sea port) is chosen instead of
   internal zone within the modeled area. The result is a complete truck trip
@@ -53,5 +51,5 @@ This function allocates discrete daily FAF (inter-regional) truck
 }
 \examples{
 daily_faf_flows <- allocate_faf_to_zones(daily_faf_trips, synthetic_firms,
-  makeuse, intermodal_connectors, external_gateways, "daily_faf_flows.csv")
+  makeuse, intermodal_connectors, external_gateways)
 }

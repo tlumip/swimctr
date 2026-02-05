@@ -4,8 +4,7 @@
 \alias{read_skim_matrices}
 \title{Convert time and distance skim matrices in OMX format to data frame format}
 \usage{
-read_skim_matrices(distance_skimsFN = NULL, time_skimsFN = NULL,
-  save_to = NULL)
+read_skim_matrices(distance_skimsFN = NULL, time_skimsFN = NULL)
 }
 \arguments{
 \item{distance_skimsFN}{Fully-qualified filename of distance skim matrix in
@@ -13,25 +12,22 @@ ZMX format}
 
 \item{time_skimsFN}{Fully-qualified filename of travel time skim matrix in
 ZMX format}
-
-\item{save_to}{Filename for saving the combined skim matrix file in comma-
-separated value format (optional)}
+}
+\value{
+A tibble containing both time and distance skims on each record.
 }
 \description{
 Convert time and distance skim matrices in OMX format to data frame format
 }
 \details{
-This function reads distance and travel time skim matrices stored in
-  compressed matrix format (zmx) used by the SWIM system, combines them into
-  a single data frame, and returns the result. The function does not assume
-  that the dimensionality is the same, so as to not use column joins that
-  might not properly align. Instead, the more inefficient but safer method of
-  matching the two by origin and destination zone numbers are used, with
-  missing values inserted for when a zone pair appears in one file but not
-  the other. The results can optionally be stored in a comma-separated value
-  file if desired.
+This function reads distance and travel time skim matrices stored
+  in compressed matrix format (zmx) used by the SWIM system. The function
+  does not assume that the dimensionality is the same, so as to not use
+  column joins that might not properly align. Instead, the more inefficient
+  but safer method of matching the two by origin and destination zone
+  numbers are used, with missing values inserted for when a zone pair
+  appears in one file but not the other.
 }
 \examples{
-skim_matrices <- read_skim_matrices("pmautodist.zmx", "pmautotime.zmx",
-  "skim_matrices.csv")
+skim_matrices <- read_skim_matrices("pmautodist.zmx", "pmautotime.zmx")
 }

@@ -4,18 +4,15 @@
 \alias{temporal_allocation}
 \title{Carry out temporal allocation for both intercity and local truck trips}
 \usage{
-temporal_allocation(daily_trips, temporal_factors, save_to = NULL)
+temporal_allocation(daily_trips, temporal_factors)
 }
 \arguments{
-\item{daily_trips}{Data frame containing daily trip records, typically with
+\item{daily_trips}{A tibble containing daily trip records, typically with
 origin and destination traffic analysis zones already appended}
 
-\item{temporal_factors}{Data frame containing proportions or number of trips
+\item{temporal_factors}{A tibble containing proportions or number of trips
 per hour of the day, in 24-hour format (hours defined from 0 to 23), by
 truck type}
-
-\item{save_to}{Filename for saving the trip records with departure hour
-appended, in comma-separated value format (optional)}
 }
 \description{
 Carry out temporal allocation for both intercity and local truck trips
@@ -28,7 +25,7 @@ This function appends a departure time for each trip in data frame
   each. However, the same set of temporal factors can be applied to each if
   desired. The departure hour is sampled from the temporal factors provided
   by the user, which can either be expressed as percentages for each hour, or
-  total observed trips within each hour (from travel survey), or asserted 
+  total observed trips within each hour (from travel survey), or asserted
   weights for each hour. The factors must be defined for each truck type in
   the simulation, although the same factors can obviously be recycled if
   available for only fewer classes (e.g., all combination trucks, rather than
@@ -40,6 +37,5 @@ This function appends a departure time for each trip in data frame
 \examples{
 hourly_faf_trucks <- temporal_allocation(daily_faf_trips,
   long_distance_factors)
-hourly_local_trucks <- temporal_allocation(daily_local_trips,
-  temporal_spread, "final_internal_trip_records.csv")
+hourly_local_trucks <- temporal_allocation(daily_local_trips, hourly_factors)
 }

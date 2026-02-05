@@ -1,0 +1,143 @@
+## Second look at CVS payload weight distributions
+[Rick Donnelly](mailto:rick.donnelly@gmail.com) | `r date()`
+```{r init, echo = FALSE, message = FALSE, warning = FALSE}
+suppressPackageStartupMessages(library(tidyverse))
+suppressPackageStartupMessages(library(knitr))
+suppressPackageStartupMessages(library(kableExtra))
+options(width = 98, dplyr.summarise.inform = FALSE)
+percent_ <- function(x, y = sum(x), places = 1) round((x/y)*100, places)
+kable_ <- function(df, ...) {
+  knitr::kable(df, "html") %>%
+  kable_styling(bootstrap_options = c("condensed", "striped"), full_width = FALSE, font_size = 13)
+}
+```
+
+<br>
+Start by reading the combined 2012 data and converting the payload weight to short tons. We can drop observations that do not contain truck class or weight. We can also drop observations for triple combination trucks (TPT), as we have too few for our analyses.
+```{r get_data}
+cvs12 <- "./combined-2012-cvs-records.csv.xz" %>%
+  readr::read_csv(show_col_types = FALSE, guess_max = 2e6) %>%
+  rename(payload_kg = F08AMOAC2) %>%
+  filter(!is.na(payload_kg), !is.na(truck_type)) %>%
+  mutate(payload_tons = payload_kg / 907.1847, distance_mi = round(H17KMTOT * 0.621371, 0),
+    distance_bin = cut(distance_mi, c(0, 50, 100, 200, 500, 5000), dig.lab = 5),
+    truck_type = factor(truck_type, levels = c("SU", "TT", "CS", "DBL", "TPT")))
+```
+
+### Summarise trip types
+
+We can get an idea of which trips to include in our analyses by looking at the distances traveled by truck type.
+```{r distance_by_types}
+eh <- cvs12 %>%
+  filter(!is.na(trip_type), !is.na(distance_bin)) %>%
+  group_by(distance_bin, trip_type, truck_type) %>%
+  summarise(n = n())
+ggplot(eh, aes(x = truck_type, y = n, label = n, fill = truck_type)) +
+  geom_bar(stat = "identity", size = 0.2, width = 0.8, color = "black") +
+  geom_text(size = 3, vjust = -0.45) + ylim(0, max(eh$n) * 1.15) +
+  facet_grid(distance_bin ~ trip_type) + theme(legend.position = "none")
+```
+
+### Summarise payload weight distributions
+
+Summarise payload weights by vehicle type:
+```{r first_summary, fig.height = 2.50, fig.width = 4.5}
+drop_triples <- filter(cvs12, truck_type != "TPT")
+kable_(group_by(drop_triples, truck_type) %>%
+  summarise(n = n(), mean = round(mean(payload_tons), 1), median = round(median(payload_tons), 1)))
+ggplot(drop_triples, aes(x = payload_tons, y = truck_type)) + geom_boxplot()
+```
+
+Can we see a relationship between distance traveled and weight carried?
+```{r weight_vs_distance, fig.height = 6.0, fig.width = 9.5}
+ggplot(filter(drop_triples, !is.na(trip_type)), aes(x = distance_mi, y = payload_tons)) +
+  geom_point(alpha = 0.125) + facet_grid(truck_type ~ trip_type)
+```
+
+I'd like to next bin the data so that we can have sensible distribution intervals:
+```{r add_intervalstruck, fig.width = 9.0}
+step_size <- 7
+upper_bound <- round(max(drop_triples$payload_tons), -1)
+add_intervals <- drop_triples %>%
+  mutate(payload_bin = cut(payload_tons, breaks = seq(0, upper_bound, step_size))) %>%
+  filter(!is.na(payload_bin), trip_type %in% c("Line haul trip"))
+sum_intervals <- add_intervals %>%
+  group_by(truck_type, trip_type, payload_bin) %>%
+  summarise(n = n())
+ggplot(sum_intervals, aes(x = payload_bin, y = n)) +
+  geom_bar(stat = "identity", color = "black", size = 0.25, fill = "azure", width = 0.85) +
+  facet_wrap(~truck_type, ncol = 2, scales = "free_y") + labs(x = "payload (tons)", y = "observations")
+```
+
+We can export the observed distributions in one ton increments so that we get reasonable sampling downstream.
+```{r create_distributions}
+export_intervals <- drop_triples %>%
+  mutate(payload_tons = as.integer(round(payload_tons, 0))) %>%
+  filter(!is.na(payload_tons), trip_type %in% c("Line haul trip")) %>%
+  group_by(truck_type, payload_tons) %>%
+  summarise(n = n()) %>%
+  mutate(percent = percent_(n)) %>%
+  ungroup() %>%
+  select(-n)
+```
+
+We need to add triple combination trucks back into the mix before exporting the distributions. We also need to reshape the tibble so that it is in the same format expected by CT.
+```{r ohplease}
+add_triples <- export_intervals %>%
+  select(payload_tons, everything()) %>%
+  spread(truck_type, percent, fill = 0.0) %>%
+  mutate(TPT = DBL)
+readr::write_csv(add_triples, "./cvs_payload_weight_distributions.csv")
+```
+
+### Truck allocation factors
+
+We will generate the truck allocation factors in the same format used by ORNL in their process for generating truckload equivalents of commodity flows. We will need to do this in the same distance bands that they used.
+```{r rethink_truck_allocations}
+taf <- cvs12 %>%
+  filter(!is.na(truck_type), !is.na(distance_bin)) %>%
+  group_by(distance_bin, truck_type) %>%
+  summarise(n = n()) %>%
+  mutate(percent = percent_(n))
+```
+
+We'd like to compare these to the values that FAF publishes:
+```{r define_feds}
+fhwa <- tribble(
+  ~distance_bin,      ~SU,      ~TT,      ~CS,     ~DBL,      ~TPT,
+       "(0,50]", 0.793201, 0.070139, 0.130465, 0.006179, 0.0000167,
+     "(50,100]", 0.577445, 0.058172, 0.344653, 0.019608,         0,
+    "(100,200]", 0.313468, 0.045762, 0.565269, 0.074434,  0.000452,
+    "(200,500]", 0.142467, 0.027288, 0.751628, 0.075218,  0.002031,
+   "(500,5000]",  0.06466,   0.0149, 0.879727, 0.034143,  0.004225
+) %>%
+  gather(truck_type, percent, SU:TPT) %>%
+  mutate(percent = round(percent * 100, 1), dataset = "FHWA")
+```
+
+Compare the two datasets side by side:
+```{r compare_truck_allocations}
+combined <- taf %>%
+  mutate(dataset = "CVS") %>%
+  bind_rows(., fhwa) %>%
+  mutate(distance_bin = factor(distance_bin, levels = unique(fhwa$distance_bin)),
+    truck_type = factor(truck_type, levels = c("SU", "TT", "CS", "DBL", "TPT")))
+y_extent <- max(combined$percent) * 1.15
+ggplot(combined, aes(x = truck_type, y = percent, label = percent, fill = truck_type)) +
+  geom_bar(stat = "identity", color = "black", size = 0.2, width = 0.8) +
+  geom_text(size = 3.0, vjust = -0.45) + ylim(0, y_extent) +
+  facet_grid(distance_bin ~ dataset) + theme(legend.position = "none")
+```
+
+We can now export the CVS truck allocation factors in the same format used previously for the FHWA factors:
+```{r export_truck_allocations}
+export_taf <- taf %>%
+  mutate(frequency = round(percent / 100, 4)) %>%
+  select(-n, -percent) %>%
+  spread(truck_type, frequency, fill = 0.0) %>%
+  separate(distance_bin, c("minimum_range", "maximum_range"), sep = ',') %>%
+  mutate(minimum_range = as.integer(sub('\\(', '', minimum_range)),
+    minimum_range = ifelse(minimum_range == 0, 0, minimum_range + 1),
+    maximum_range = sub('\\]', '', maximum_range))
+readr::write_csv(export_taf, "./cvs_truck_allocation_factors.csv")
+```

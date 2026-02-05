@@ -1,0 +1,36 @@
+\begin{sidewaystable} 
+\centering
+\caption{CT module inputs}\label{tab:ct-module-inputs}
+\begin{tabular}{l L{4.75in} l}
+\hline
+Property & Description & Default value \\
+\hline
+ct.alpha2beta & Path to zonal equivalencies file & None \\
+\gray ct.cluster.logfile & Name of CT cluster log file when running in parallel mode & None \\
+ct.codePath & Path to where the CT package code exists & None \\
+\gray ct.destination.utilities & Scaling factors for size terms in stop location choice model & ct\_destination\_utilities.csv \\
+ct.distance.skims & Interzonal distances on the shortest travel time path & None \\
+\gray ct.external.constraints & Observed and projected truck flows at SWIM2 external zones & ct\_external\_constraints.csv) \\
+ct.filePath & Path to output folder & None \\
+\gray ct.generation.probabilities & Constraints for tour generation in trips/employee & ct\_local\_generation\_probabilities.csv \\
+ct.intermodal.connectors & Zones where freight transfers between truck and marine or air cargo ports within each FAF region within SWIM2 modeled area & ct\_intermodal\_connectors.csv \\
+\gray ct.logfile & Name for CT log file & None \\
+ct.maximum.resampling.attempts & Integer value that controls the  number of times the tour generation sampling will repeat if it does not finish with same number of trips calculated in aggregate for the entire study area & 100.0 \\
+\gray ct.maximum.resampling.threshold & Floating point number defining how close the simulation must match aggregate number of trips for the entire modeled area & 1.0 \\
+ct.outdir & Path to scenario output folder & None \\
+\gray ct.properties.folder & Path to input parameters & None \\
+ct.property & Path to `ct.properties` file & None \\
+\gray ct.rcode & R script that runs the CT model & None \\
+ct.sector.equivalencies & Mapping of AA sectors to CT industry categories & ct\_sector\_categories.csv \\
+\gray ct.synthetic.population & Synthetic households file for the current SWIM2 simulation year & SynPop\_Taz\_Summary.csv \\
+ct.temporal.factors & Hour of day distributions by truck type & ct\_truck\_temporal\_distributions.csv \\
+\gray ct.travel.time.skims & Interzonal travel times on the least cost path & None \\
+ct.trip.length.targets & Trip length distributions by truck type & ct\_trip\_length\_targets.csv \\
+\gray cvs.payload.distributions & Distribution of payload weights by truck type & cvs\_payload\_weight\_distributions.csv \\
+\gray faf.flow.data & Preprocessed FAF regional database for SWIM2 modeled area & prebuilt\_faf\_multiyear.csv.xz \\
+faf.truck.allocation.factors & Proportions of long distance trucks by vehicle type & faf4\_truck\_allocation\_factors.csv \\
+\gray pecas.makeuse & AA make and use flows for the current simulation year & MakeUse.csv \\
+pecas.zonal.employment & AA zonal employment estimates by sector & Employment.csv \\
+\hline
+\end{tabular}
+\end{sidewaystable}

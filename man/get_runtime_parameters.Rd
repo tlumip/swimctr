@@ -4,31 +4,24 @@
 \alias{get_runtime_parameters}
 \title{Read the runtime parameters file and store them in environment}
 \usage{
-get_runtime_parameters(propertiesFN, format = "java", delimiter = "=",
-  import_flag = "&", echo_parameters = TRUE, save_to = NULL)
+get_runtime_parameters(properties_FN, file_format = "simple", delimiter = "=")
 }
 \arguments{
-\item{propertiesFN}{Filename containing the runtime parameters, with full
+\item{properties_FN}{Filename containing the runtime parameters, with full
 path information included in the filename}
 
-\item{format}{The format the runtime parameters are stored in within the
-file, which includes java (the default, and currently only supported
-format) and xml (future)}
+\item{file_format}{The format the runtime parameters are stored in within the
+file, which includes 'simple' (the default, and currently only supported
+format) and hypertext formats in the future}
 
 \item{delimiter}{The character used to separate the parameter name from its
 value (defaults to '=', not relevant for XML format)}
-
-\item{import_flag}{Some parameters are tables stored in external files in
-command separated value (CSV) format. This parameter, when it precedes the
-runtime parameter value, signals the function that the value string is
-a file that should should be read when adding that runtime parameter to the
-simulation environment. (default is '&')}
-
-\item{echo_parameters}{Print the runtime parameters after setting them up
-(defaults to TRUE)}
-
-\item{save_to}{Filename for saving the runtime parameters to R binary file
-for later processing or archiving (optional)}
+}
+\value{
+This function creates a RTP environment that is subsequently accessed by
+  all CT functions during a model run. The function returns a string that
+  reports the tokens and their corresponding values. The user can ignore the
+  results by calling the function with reading the results into a variable.
 }
 \description{
 Read the runtime parameters file and store them in environment
@@ -38,23 +31,22 @@ This function reads a file containing the runtime parameters
   required by the CT platform. The variables required depend somewhat upon
   the exact model implementation (i.e., what CT functions are called, using
   what methods, and in what order). These should be specified by the model
-  developer. Note that it is possible to call this function twice in order
-  to set default parameters the first time through, and scenario-specific
-  parameters the second time. In that case the default parameters are
-  overwritten if also defined in the scenario-specific parameters file. This
-  enables the latter to only contain parameter values that differ from one
-  model run to the next, rather than repeating standard parameters that
-  rarely change, if ever, between different simulations.
+  developer. Note that it is possible to call this function multiple times in
+  order to set default parameters the first time through, and scenario- or
+  run-specific parameters later. In that case, earlier parameters are
+  overwritten if also defined in files read later. This enables the latter to
+  only contain parameter values that differ from one model run to the next,
+  rather than repeating standard parameters that rarely change, if ever,
+  between different simulations.
 
-  It is important to note that all of the parameters are treated as strings
-  in plaintext (java) formatted files, whereas the class can be explicitly
-  set in XML or JSON files. However, the latter are not yet implemented (and
-  will not be until needed). Thus, it is incumbent upon the user to cast the
-  runtime parameters to correct class before evaluating or manipulating them
-  in their code.
+  A token name can be included in one or more value fields by enclosing it
+  between percent signs. For example, the `t.year` parameters could be
+  included in the value `results_%t.year%.csv`. All of the token substitution
+  is carried out before the token-value pairs are placed in global runtime
+  environment.
 }
 \examples{
 get_runtime_parameters("/Models/swim25/run81/t0/swim.properties")
-get_runtime_parameters("/Models/swim25/run91/t25/swim.properties",
-  save_to = "ct_runtime_parameters.RData")
+first_params <- get_runtime_parameters(
+  "/Models/swim25/run91/t25/swim.properties")
 }
