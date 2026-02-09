@@ -1,6 +1,33 @@
 ## Prebuild FAF database for use with the CT module
 [Rick Donnelly](mailto:rick.donnelly@gmail.com) | `r date()`
 ```{r init, echo = FALSE, message = FALSE, warning = FALSE}
+# Set the working directory as swimctr package
+knitr::opts_knit$set(root.dir = "D:/D-Data/Projects/Clients/OR_DOT/SWIM_26_WOC1/GitHub/swimctr")
+
+# Set the CRAN repo
+options(repos = c(CRAN='https://cloud.r-project.org'))
+
+# Check if the packages are installed and if not then install them
+cran_packages <- c("tidyverse", "knitr", "kableExtra", "remotes", "feather")
+github_packages <- c("tlumip/swimctr")
+
+# Identify which packages are not installed
+missing_cran_pkgs <- cran_packages[!(cran_packages %in% installed.packages()[,"Package"])]
+
+# Install missing packages
+if (length(missing_cran_pkgs) > 0) {
+  install.packages(missing_cran_pkgs)
+}
+
+# Install missing GitHub packages
+for (github_pkg in github_packages) {
+  pkg_name <- sub(".*/", "", github_pkg)   # extract repo name
+  if (!pkg_name %in% installed.packages()[,"Package"]) {
+    remotes::install_github(github_pkg)
+  }
+}
+
+
 suppressPackageStartupMessages(library(tidyverse))
 suppressPackageStartupMessages(library(knitr))
 suppressPackageStartupMessages(library(kableExtra))
@@ -21,7 +48,7 @@ The FAF regional database is distributed as a single comma-separated value (CSV)
 
 In both cases the Zip file normally only contains a single CSV file, named as above. The code below should read that file without modification. However, in some FAF releases an extra file was included that our code cannot handle. If this happens simply unzip the file and edit `FN` below to point to that file. Our translation process starts with reading that file, which will be read from memory several times during our translation process.
 ```{r first}
-target <- "~/Desktop/FAF5.4.csv.xz"
+target <- "./data-raw/FAF5.7.1.csv"
 fhwa_db <- readr::read_csv(target, guess_max = 1e6, show_col_types = FALSE)
 kable_(swimctr::list_tibble_contents(fhwa_db))
 ```
@@ -34,7 +61,7 @@ SWIM_FAF_REGIONS <- c(411, 419, 532)  # Portland, rest of Oregon, Vancouver
 
 In FAF Version 4 the weighted distance for each transaction (record) in the data were provided. The distances were from the origin point to destination point from the source data (typically the 2017 [Commodity Flow Survey](https://www.census.gov/programs-surveys/cfs.html)). Since there were typically several flow records in the source data a tonnage-weighted distance was calculated for each FAF region interchange. This allowed us to report the full vehicle miles of travel for truck trips entering and leaving Oregon rather than just their mileage on the SWIM network. These weighted distances were inexplicably replaced by far less useful wide distance bands in FAF Version 5. We have separately compiled a database of FAF 4.5.1 weighted distances (`wgt_dist`) that we must append to the FAF 5 and later data to regain the same distance precision. In this step we read the data needed to do so.
 ```{r three}
-FN <- "~/Models/swimctr/data-raw/faf451_distances.csv"
+FN <- "./data-raw/faf451_distances.csv"
 distances <- swimctr:::load_tabular_data(FN)
 kable_(swimctr::list_tibble_contents(distances))
 append_distances <- swimctr::append_weighted_distances(fhwa_db, distances)
@@ -42,7 +69,7 @@ append_distances <- swimctr::append_weighted_distances(fhwa_db, distances)
 
 The SWIM modeled area only includes Oregon and a halo of immediately adjacent counties. The flows to and from Oregon from regions outside of the SWIM halo will unambiguously be extracted from the FAF regional database by virtue of one or both trip ends being within the halo. However, through trips must be explicitly defined. The `faf_through_equivalencies` file lists one or more routes for flows that might pass through Oregon. Those competing routes that don't pass through the halo have zeroes coded as entry and exit points. We can ignore those for now, as there will always be competing routes that do go through Oregon coded in this file. 
 ```{r four}
-FN <- "~/Models/swimctr/data-raw/faf_through_equivalencies.csv"
+FN <- "./data-raw/faf_through_equivalencies.csv"
 external_regions <- swimctr:::load_tabular_data(FN) %>% filter(entry > 0, exit > 0)
 kable_(swimctr::list_tibble_contents(external_regions))
 ```
