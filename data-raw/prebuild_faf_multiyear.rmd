@@ -9,7 +9,6 @@ options(repos = c(CRAN='https://cloud.r-project.org'))
 
 # Check if the packages are installed and if not then install them
 cran_packages <- c("tidyverse", "knitr", "kableExtra", "remotes", "feather")
-github_packages <- c("tlumip/swimctr")
 
 # Identify which packages are not installed
 missing_cran_pkgs <- cran_packages[!(cran_packages %in% installed.packages()[,"Package"])]
@@ -19,13 +18,7 @@ if (length(missing_cran_pkgs) > 0) {
   install.packages(missing_cran_pkgs)
 }
 
-# Install missing GitHub packages
-for (github_pkg in github_packages) {
-  pkg_name <- sub(".*/", "", github_pkg)   # extract repo name
-  if (!pkg_name %in% installed.packages()[,"Package"]) {
-    remotes::install_github(github_pkg)
-  }
-}
+
 
 
 suppressPackageStartupMessages(library(tidyverse))
@@ -37,6 +30,15 @@ kable_ <- function(df, ...) {
   knitr::kable(df, "html") %>%
   kable_styling(bootstrap_options = c("condensed", "striped"), full_width = FALSE, font_size = 13)
 }
+```
+
+
+```{r swimctr_install, echo = FALSE, message = FALSE, warning = FALSE}
+swimctr_package_path <- "."
+if (!"swimctr" %in% installed.packages()[,"Package"]) {
+  install.packages(swimctr_package_path, type = "source", repos=NULL)
+}
+
 ```
 
 <br>
